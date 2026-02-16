@@ -11,9 +11,8 @@ namespace guest_house_management_backend.Services
 
         public Task CreateUserAsync(CreateUserDto user);
 
-        public Task<UserDto> UpdateUserAsync(int Id,CreateUserDto user);
-
         public Task DeleteUserAsync(int Id);
+
 
     }
 }

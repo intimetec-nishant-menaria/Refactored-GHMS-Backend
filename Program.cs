@@ -25,9 +25,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins(builder.Configuration["Frontend:URL"]!) 
+            policy.WithOrigins(builder.Configuration["Frontend:URL"]!)
                   .AllowAnyHeader()
-                  .AllowAnyMethod();
+                  .AllowAnyMethod()
+                  .AllowCredentials();
         });
 });
 builder.Services.AddAuthentication(option =>

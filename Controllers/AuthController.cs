@@ -1,7 +1,9 @@
 ﻿using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection.Metadata.Ecma335;
+using System.Security.Claims;
 
 namespace guest_house_management_backend.Controllers
 {
@@ -27,11 +29,21 @@ namespace guest_house_management_backend.Controllers
             if (token == null)
                 return Unauthorized("invalid Credentials");
 
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true, 
+                Secure = false,   
+                SameSite = SameSiteMode.Strict, 
+                Expires = DateTime.UtcNow.AddDays(5)
+            };
+
+            Response.Cookies.Append("jwtToken", token, cookieOptions);
+
             return Ok(new { token});
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> register(RegisterDto dto)
+        public async Task<IActionResult> Register(RegisterDto dto)
         { 
             var result = await _authService.RegisterAsync(dto);
 
@@ -41,5 +53,31 @@ namespace guest_house_management_backend.Controllers
             return Ok(new { message = "Registration successful." });
         }
 
+        [Authorize]
+        [HttpPost("logout")]
+       public IActionResult Logout()
+       {
+            Response.Cookies.Delete("jwtToken");
+            return Ok(new { message = "Loggoed out successfully" });
+       }
+
+
+        [Authorize]
+        [HttpPost("change-password")]
+        public  async Task<IActionResult> ChangePassword(ChangePasswordDto changePassword)
+        {
+            var UserIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (UserIdClaim == null)
+                return Unauthorized();
+
+            int UserId = int.Parse(UserIdClaim.Value);  
+            var result = await _authService.ChangePassword(UserId,changePassword);
+
+            if (!result.Success)
+                return BadRequest(result.Message);
+
+            return Ok(result.Message);
+        }
     }
 }

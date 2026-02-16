@@ -9,8 +9,6 @@ namespace guest_house_management_backend.Repositories
         public Task<User?> GetByIdAsync(int id);
         public Task AddUserAsync(User user);
         public Task DeleteAsync(int id);
-
-
-
+        public Task UpdateAsync(User user);
     }
 }

@@ -6,5 +6,7 @@ namespace guest_house_management_backend.Services
     {
         public Task<string?> LoginAsync(LoginDto dto);
         public Task<bool> RegisterAsync(RegisterDto dto);
+
+        public Task<(bool Success , string Message)> ChangePassword(int UserId,ChangePasswordDto dto);
     }
 }

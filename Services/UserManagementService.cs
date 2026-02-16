@@ -44,12 +44,5 @@ namespace guest_house_management_backend.Services
         {
             return await _userRepository.GetByIdAsync(id);
         }
-
-        public Task<UserDto> UpdateUserAsync(int Id, CreateUserDto user)
-        {
-            throw new NotImplementedException();
-        }
-
-
     }
 }

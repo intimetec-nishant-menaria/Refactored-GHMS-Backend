@@ -1,6 +1,7 @@
 ﻿using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Models;
 using guest_house_management_backend.Repositories;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -78,7 +79,7 @@ namespace guest_house_management_backend.Services
             var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                    issuer: _configuration["JWt:ValidIssuer"],
+                    issuer: _configuration["JWT:ValidIssuer"],
                     audience: _configuration["JWT:ValidAudience"],
                     claims: claims,
                     expires: DateTime.UtcNow.AddDays(5),
@@ -86,6 +87,25 @@ namespace guest_house_management_backend.Services
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<(bool Success,string Message)> ChangePassword(int UserId,ChangePasswordDto dto)
+        {
+            var user = await _userRepository.GetByIdAsync(UserId);
+
+            if (user == null)
+                return (false, "User not found");
+
+            bool valid = BCrypt.Net.BCrypt.Verify(dto.OldPassword, user.HashPassword);
+
+            if (!valid)
+                return (false , "current password is incorrect");
+
+            user.HashPassword = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+
+            await _userRepository.UpdateAsync(user);
+
+            return (true, "Password changed successfully");
         }
     }
 
