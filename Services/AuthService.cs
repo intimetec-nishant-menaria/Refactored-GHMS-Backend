@@ -1,7 +1,6 @@
 ﻿using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Models;
 using guest_house_management_backend.Repositories;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
