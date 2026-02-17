@@ -1,5 +1,5 @@
 ﻿using guest_house_management_backend.DTOs;
-using guest_house_management_backend.Services;
+using guest_house_management_backend.Services.UserManagement;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

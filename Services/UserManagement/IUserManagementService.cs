@@ -1,7 +1,7 @@
 ﻿using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Models;
 
-namespace guest_house_management_backend.Services
+namespace guest_house_management_backend.Services.UserManagement
 {
     public interface IUserManagementService
     {

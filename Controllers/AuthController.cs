@@ -1,5 +1,5 @@
 ﻿using guest_house_management_backend.DTOs;
-using guest_house_management_backend.Services;
+using guest_house_management_backend.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection.Metadata.Ecma335;
@@ -79,5 +79,35 @@ namespace guest_house_management_backend.Controllers
 
             return Ok(result.Message);
         }
+
+        [HttpPost("forget-password")]
+        public async Task<IActionResult> ForgetPassword(ForgetPasswordDto forgetPassword)
+        {
+            await _authService.ForgetPasswordAsync(forgetPassword);
+            return Ok("A reset email has been sent");
+        }
+
+        [HttpGet("verify-forget-password")]
+        public async Task<IActionResult> VerifyResetToken(string email ,string token)
+        {
+            var IsValid = await _authService.VerifyResetTokenAsync(email, token);
+
+            if (!IsValid)
+                return BadRequest("Invalid or expired token.");
+
+            return Ok("Token is valid.");
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
+        {
+            var result = await _authService.ResetPasswordAsync(dto);
+
+            if (!result)
+                return BadRequest("Invalid or expired token.");
+
+            return Ok("Password reset successful.");
+        }
+
     }
 }

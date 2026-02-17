@@ -1,8 +1,9 @@
 ﻿using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Models;
-using guest_house_management_backend.Repositories;
+using guest_house_management_backend.Repositories.RoleRepo;
+using guest_house_management_backend.Repositories.UserRepo;
 
-namespace guest_house_management_backend.Services
+namespace guest_house_management_backend.Services.UserManagement
 {
     public class UserManagementService : IUserManagementService
     {

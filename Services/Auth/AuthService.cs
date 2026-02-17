@@ -1,24 +1,31 @@
 ﻿using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Models;
-using guest_house_management_backend.Repositories;
+using guest_house_management_backend.Repositories.RoleRepo;
+using guest_house_management_backend.Repositories.UserRepo;
+using guest_house_management_backend.Repositories.UserTokenRepo;
+using guest_house_management_backend.Services.Email;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace guest_house_management_backend.Services
+namespace guest_house_management_backend.Services.Auth
 {   
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
         private readonly IRoleRepository _roleRepository;
         private readonly IConfiguration _configuration;
+        private readonly IEmailSender _emailSender;
+        private readonly IUserTokenRepository _userTokenRepository;
 
-        public AuthService(IUserRepository userRepository ,IRoleRepository roleRepository ,IConfiguration configuration)
+        public AuthService(IUserRepository userRepository ,IRoleRepository roleRepository ,IConfiguration configuration , IEmailSender emailSender , IUserTokenRepository userTokenRepository)
         {
             _userRepository = userRepository;
             _roleRepository = roleRepository;
             _configuration = configuration;
+            _emailSender = emailSender;
+            _userTokenRepository = userTokenRepository;
         }
 
         public async Task<bool> RegisterAsync(RegisterDto dto)
@@ -106,6 +113,85 @@ namespace guest_house_management_backend.Services
 
             return (true, "Password changed successfully");
         }
-    }
 
+        public async Task ForgetPasswordAsync(ForgetPasswordDto forgetPassword)
+        {
+            var user = await _userRepository.GetUserByEmailAsync(forgetPassword.Email);
+
+            if (user == null)
+                return;
+
+            var token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+
+            var userToken = new UserToken
+            {
+                UserId = user.Id,
+                Token = token,
+                Type = TokenType.ResetPassword,
+                Expiry = DateTime.UtcNow.AddMinutes(30),
+                IsUsed = false,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _userTokenRepository.AddTokenAsync(userToken);
+            await _userTokenRepository.SaveChangesAsync();
+
+            var resetLink =
+                $"http://localhost:5173/verify-reset-password?email={user.Email}&token={token}";
+
+            await _emailSender.SendEmailASync(
+                user.Email,
+                "Reset Your Password",
+                $"""
+                <h3>Password Reset</h3>
+                <p>Click below to reset your password:</p>
+                <a href='{resetLink}'>Reset Password</a>
+                <p>This link expires in 30 minutes.</p>
+                """
+             );
+        }
+
+        public async Task<bool> VerifyResetTokenAsync(string email, string token)
+        {
+            var user = await _userRepository.GetUserByEmailAsync(email);
+            if (user == null)
+                return false;
+
+            var tokenEntity = await _userTokenRepository.GetValidTokenAsync(
+                user.Id,
+                token,
+                TokenType.ResetPassword
+            );
+
+            return tokenEntity != null;
+        }
+
+        public async Task<bool> ResetPasswordAsync(ResetPasswordDto dto)
+        {
+            var user = await _userRepository.GetUserByEmailAsync(dto.Email);
+
+            if (user == null)
+                return false;
+
+            var tokenEntity = await _userTokenRepository.GetValidTokenAsync(
+                user.Id,
+                dto.Token,
+                TokenType.ResetPassword
+            );
+
+            if (tokenEntity == null)
+                return false;
+
+            user.HashPassword = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+
+            tokenEntity.IsUsed = true;
+
+            await _userRepository.SaveChangesAsync();
+
+            return true;
+        }
+
+    }
 }
+
+

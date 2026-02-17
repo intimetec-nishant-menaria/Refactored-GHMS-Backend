@@ -1,6 +1,6 @@
 ﻿using guest_house_management_backend.Models;
 
-namespace guest_house_management_backend.Repositories
+namespace guest_house_management_backend.Repositories.UserRepo
 {
     public interface IUserRepository
     {
@@ -10,5 +10,6 @@ namespace guest_house_management_backend.Repositories
         public Task AddUserAsync(User user);
         public Task DeleteAsync(int id);
         public Task UpdateAsync(User user);
+        public Task SaveChangesAsync();
     }
 }

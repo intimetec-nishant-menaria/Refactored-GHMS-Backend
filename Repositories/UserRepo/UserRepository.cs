@@ -2,7 +2,7 @@
 using guest_house_management_backend.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace guest_house_management_backend.Repositories
+namespace guest_house_management_backend.Repositories.UserRepo
 {
     public class UserRepository : IUserRepository
     {
@@ -49,5 +49,11 @@ namespace guest_house_management_backend.Repositories
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
         }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
+
     }
 }

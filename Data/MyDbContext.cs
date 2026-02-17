@@ -12,5 +12,6 @@ namespace guest_house_management_backend.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<UserToken> UserTokens { get; set; }    
     }
 }

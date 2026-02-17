@@ -1,4 +1,4 @@
-﻿namespace guest_house_management_backend.Repositories
+﻿namespace guest_house_management_backend.Repositories.RoleRepo
 {
     public interface IRoleRepository
     {
