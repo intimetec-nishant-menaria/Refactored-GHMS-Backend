@@ -2,111 +2,193 @@
 using guest_house_management_backend.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 
 namespace guest_house_management_backend.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     [ApiController]
-
-
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-
         public AuthController(IAuthService authService)
         {
             _authService = authService;
         }
 
-
-        [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDto dto)
+        [Authorize]
+        [HttpGet]
+        [Route("me")]
+        public IActionResult GetMe()
         {
-            var token = await _authService.LoginAsync(dto);
+            var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var email = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+            var role = HttpContext.User.FindFirst(ClaimTypes.Role)?.Value;
 
-            if (token == null)
-                return Unauthorized("invalid Credentials");
-
-            var cookieOptions = new CookieOptions
+            return Ok(new
             {
-                HttpOnly = true, 
-                Secure = false,   
-                SameSite = SameSiteMode.Strict, 
-                Expires = DateTime.UtcNow.AddDays(5)
-            };
-
-            Response.Cookies.Append("jwtToken", token, cookieOptions);
-
-            return Ok(new { token});
+                UserId =userId,
+                Email = email,
+                Role = role
+            });
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterDto dto)
-        { 
-            var result = await _authService.RegisterAsync(dto);
+        [HttpPost]
+        [Route("login")]
+        public async Task<IActionResult> Login(LoginDto loginRequest)
+        {
+            try
+            {
+                var token = await _authService.LoginUserAsync(loginRequest);
+                if (token == null)
+                    return Unauthorized("Invalid Credentials");
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = false,
+                    Secure = false,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTime.UtcNow.AddDays(5)
+                };
+                Response.Cookies.Append("jwtToken", token, cookieOptions);
+                return Ok("Login successful");
+            }catch(UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new {message = ex.Message});
+            }catch(Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
 
-            if(!result)
-                return Conflict(new { message = "User already exists." });
-
-            return Ok(new { message = "Registration successful." });
+        [HttpPost]
+        [Route("register")]
+        public async Task<IActionResult> Register(RegisterDto registrationRequest)
+        {
+            try
+            {
+                await _authService.RegisterUserAsync(registrationRequest);
+                return Ok(new { message = "Registration successful." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
         [Authorize]
-        [HttpPost("logout")]
-       public IActionResult Logout()
-       {
-            Response.Cookies.Delete("jwtToken");
-            return Ok(new { message = "Loggoed out successfully" });
-       }
-
+        [HttpPost]
+        [Route("logout")]
+        public IActionResult Logout()
+        {
+            try
+            {
+                Response.Cookies.Delete("jwtToken");
+                return Ok(new { message = "Logged out successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
 
         [Authorize]
-        [HttpPost("change-password")]
-        public  async Task<IActionResult> ChangePassword(ChangePasswordDto changePassword)
+        [HttpPost]
+        [Route("changePassword")]
+        public async Task<IActionResult> ChangeUserPassword(ChangePasswordDto changePasswordRequest)
         {
-            var UserIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+            try
+            {
+                var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+                    return Unauthorized(new { message = "Invalid user." });
 
-            if (UserIdClaim == null)
-                return Unauthorized();
+                var result = await _authService.ChangeUserPassword(userId, changePasswordRequest);
+                if (!result.Success)
+                    return BadRequest(new { message = result.Message });
 
-            int UserId = int.Parse(UserIdClaim.Value);  
-            var result = await _authService.ChangePassword(UserId,changePassword);
-
-            if (!result.Success)
-                return BadRequest(result.Message);
-
-            return Ok(result.Message);
+                return Ok(new { message = result.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
-        [HttpPost("forget-password")]
-        public async Task<IActionResult> ForgetPassword(ForgetPasswordDto forgetPassword)
+        [HttpPost]
+        [Route("forgetPassword")]
+        public async Task<IActionResult> ForgetUserPassword(ForgetPasswordDto forgetPasswordRequest)
         {
-            await _authService.ForgetPasswordAsync(forgetPassword);
-            return Ok("A reset email has been sent");
+            try
+            {
+                await _authService.ForgetUserPasswordAsync(forgetPasswordRequest);
+                return Ok(new { message = "A reset email has been sent." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Something went wrong." });
+            }
         }
 
-        [HttpGet("verify-forget-password")]
-        public async Task<IActionResult> VerifyResetToken(string email ,string token)
+        [HttpGet]
+        [Route("verify-forget-password")]
+        public async Task<IActionResult> VerifyResetToken(string email, string token)
         {
-            var IsValid = await _authService.VerifyResetTokenAsync(email, token);
-
-            if (!IsValid)
-                return BadRequest("Invalid or expired token.");
-
-            return Ok("Token is valid.");
+            try
+            {
+                await _authService.VerifyResetTokenAsync(email, token);
+                return Ok(new { message = "Token is valid." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Something went wrong." });
+            }
         }
 
-        [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
+        [HttpPost]
+        [Route("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDto resetPasswordRequest)
         {
-            var result = await _authService.ResetPasswordAsync(dto);
-
-            if (!result)
-                return BadRequest("Invalid or expired token.");
-
-            return Ok("Password reset successful.");
+            try
+            {
+                await _authService.ResetPasswordAsync(resetPasswordRequest);
+                return Ok(new { message = "Password reset successful." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Something went wrong." });
+            }
         }
 
     }

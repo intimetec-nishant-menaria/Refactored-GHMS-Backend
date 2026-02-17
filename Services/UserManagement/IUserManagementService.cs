@@ -7,11 +7,11 @@ namespace guest_house_management_backend.Services.UserManagement
     {
         public Task<IEnumerable<User>> GetAllUsersAsync();
 
-        public Task<User?> GetUserByIdAsync(int id);
+        public Task<User?> GetUserByIdAsync(Guid id);
 
-        public Task CreateUserAsync(CreateUserDto user);
+        public Task CreateUserAsync(CreateUserDto userDto);
 
-        public Task DeleteUserAsync(int Id);
+        public Task DeleteUserAsync(Guid Id);
 
 
     }

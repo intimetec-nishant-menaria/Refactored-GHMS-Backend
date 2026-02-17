@@ -1,4 +1,5 @@
 ﻿using guest_house_management_backend.DTOs;
+using guest_house_management_backend.Enums;
 using guest_house_management_backend.Models;
 using guest_house_management_backend.Repositories.RoleRepo;
 using guest_house_management_backend.Repositories.UserRepo;
@@ -10,7 +11,7 @@ using System.Security.Claims;
 using System.Text;
 
 namespace guest_house_management_backend.Services.Auth
-{   
+{
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
@@ -18,8 +19,7 @@ namespace guest_house_management_backend.Services.Auth
         private readonly IConfiguration _configuration;
         private readonly IEmailSender _emailSender;
         private readonly IUserTokenRepository _userTokenRepository;
-
-        public AuthService(IUserRepository userRepository ,IRoleRepository roleRepository ,IConfiguration configuration , IEmailSender emailSender , IUserTokenRepository userTokenRepository)
+        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IConfiguration configuration, IEmailSender emailSender, IUserTokenRepository userTokenRepository)
         {
             _userRepository = userRepository;
             _roleRepository = roleRepository;
@@ -28,48 +28,42 @@ namespace guest_house_management_backend.Services.Auth
             _userTokenRepository = userTokenRepository;
         }
 
-        public async Task<bool> RegisterAsync(RegisterDto dto)
+        public async Task RegisterUserAsync(RegisterDto registerRequest)
         {
-            var user = await _userRepository.GetUserByEmailAsync(dto.Email);
+            var user = await _userRepository.GetUserByEmailAsync(registerRequest.Email);
+            if (user != null)
+                throw new InvalidOperationException("User with this email already exists.");
 
-            if (user!=null)
-                return false;
-
-            var RoleId = await _roleRepository.GetRoleIdByNameAsync("guest");
-
-             User newUser = new User
+            var roleId = await _roleRepository.GetRoleIdByNameAsync(RoleEnum.Guest);
+            User newUser = new User
             {
-                Name = dto.FullName,
-                Email = dto.Email,
-                HashPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                RoleId = RoleId,
+                Name = registerRequest.FullName,
+                Email = registerRequest.Email,
+                HashPassword = BCrypt.Net.BCrypt.HashPassword(registerRequest.Password),
+                RoleId = roleId,
             };
-
             await _userRepository.AddUserAsync(newUser);
-            return true;
         }
 
-
-        public async Task<string?> LoginAsync(LoginDto Dto)
+        public async Task<string?> LoginUserAsync(LoginDto loginRequest)
         {
-            var user = await _userRepository.GetUserByEmailAsync(Dto.Email);
+            var user = await _userRepository.GetUserByEmailAsync(loginRequest.Email);
 
             if (user == null)
-                return null;
-
-            if (!VerifyPassword(Dto.Password, user.HashPassword))
-                return null;
-
-
+            {
+                throw new KeyNotFoundException("User with this email does not exist.");
+            }
+            if (!VerifyUserPassword(loginRequest.Password, user.HashPassword))
+            {
+                throw new UnauthorizedAccessException("Invalid password.");
+            }
             return CreateToken(user);
         }
 
-
-        private bool VerifyPassword(string password , string hashPassword) 
+        private bool VerifyUserPassword(string password, string hashPassword)
         {
             return BCrypt.Net.BCrypt.Verify(password, hashPassword);
         }
-
 
         private string CreateToken(User user)
         {
@@ -77,7 +71,7 @@ namespace guest_house_management_backend.Services.Auth
             {
                 new Claim(ClaimTypes.NameIdentifier , user.Id.ToString()),
                 new Claim(ClaimTypes.Email , user.Email),
-                new Claim(ClaimTypes.Role ,user.Role.Name)
+                new Claim(ClaimTypes.Role ,user.Role.RoleName.ToString())
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]!));
@@ -95,31 +89,31 @@ namespace guest_house_management_backend.Services.Auth
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<(bool Success,string Message)> ChangePassword(int UserId,ChangePasswordDto dto)
+        public async Task<(bool Success, string Message)> ChangeUserPassword(Guid UserId, ChangePasswordDto changePasswordRequest)
         {
             var user = await _userRepository.GetByIdAsync(UserId);
 
             if (user == null)
-                return (false, "User not found");
+                throw new KeyNotFoundException("User not found.");
 
-            bool valid = BCrypt.Net.BCrypt.Verify(dto.OldPassword, user.HashPassword);
+            bool valid = BCrypt.Net.BCrypt.Verify(changePasswordRequest.OldPassword, user.HashPassword);
 
             if (!valid)
-                return (false , "current password is incorrect");
+                throw new UnauthorizedAccessException("Current password is incorrect.");
 
-            user.HashPassword = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            user.HashPassword = BCrypt.Net.BCrypt.HashPassword(changePasswordRequest.NewPassword);
 
             await _userRepository.UpdateAsync(user);
 
             return (true, "Password changed successfully");
         }
 
-        public async Task ForgetPasswordAsync(ForgetPasswordDto forgetPassword)
+        public async Task ForgetUserPasswordAsync(ForgetPasswordDto forgetPasswordRequest)
         {
-            var user = await _userRepository.GetUserByEmailAsync(forgetPassword.Email);
+            var user = await _userRepository.GetUserByEmailAsync(forgetPasswordRequest.Email);
 
             if (user == null)
-                return;
+                throw new KeyNotFoundException("No user found with this email.");
 
             var token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
 
@@ -127,7 +121,7 @@ namespace guest_house_management_backend.Services.Auth
             {
                 UserId = user.Id,
                 Token = token,
-                Type = TokenType.ResetPassword,
+                Type = UserTokenEnum.ResetPassword,
                 Expiry = DateTime.UtcNow.AddMinutes(30),
                 IsUsed = false,
                 CreatedAt = DateTime.UtcNow
@@ -151,44 +145,43 @@ namespace guest_house_management_backend.Services.Auth
              );
         }
 
-        public async Task<bool> VerifyResetTokenAsync(string email, string token)
+        public async Task VerifyResetTokenAsync(string email, string token)
         {
             var user = await _userRepository.GetUserByEmailAsync(email);
             if (user == null)
-                return false;
+                throw new KeyNotFoundException("No user found with this email.");
 
             var tokenEntity = await _userTokenRepository.GetValidTokenAsync(
                 user.Id,
                 token,
-                TokenType.ResetPassword
+                UserTokenEnum.ResetPassword
             );
 
-            return tokenEntity != null;
-        }
 
-        public async Task<bool> ResetPasswordAsync(ResetPasswordDto dto)
+            if (tokenEntity == null)
+                throw new UnauthorizedAccessException("Invalid or expired token.");
+        }
+        public async Task ResetPasswordAsync(ResetPasswordDto resetPasswordRequest)
         {
-            var user = await _userRepository.GetUserByEmailAsync(dto.Email);
+            var user = await _userRepository.GetUserByEmailAsync(resetPasswordRequest.Email);
 
             if (user == null)
-                return false;
+                throw new KeyNotFoundException("No user found with this email.");
 
             var tokenEntity = await _userTokenRepository.GetValidTokenAsync(
                 user.Id,
-                dto.Token,
-                TokenType.ResetPassword
+                resetPasswordRequest.Token,
+                UserTokenEnum.ResetPassword
             );
 
             if (tokenEntity == null)
-                return false;
+                throw new UnauthorizedAccessException("Invalid or expired reset token.");
 
-            user.HashPassword = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            user.HashPassword = BCrypt.Net.BCrypt.HashPassword(resetPasswordRequest.NewPassword);
 
             tokenEntity.IsUsed = true;
 
             await _userRepository.SaveChangesAsync();
-
-            return true;
         }
 
     }

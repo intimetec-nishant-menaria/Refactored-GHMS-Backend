@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
 namespace guest_house_management_backend.DTOs
 {
     public class ForgetPasswordDto

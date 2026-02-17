@@ -6,9 +6,9 @@ namespace guest_house_management_backend.Repositories.UserRepo
 {
     public class UserRepository : IUserRepository
     {
-        private readonly MyDbContext _context;
+        private readonly Data.DBContext _context;
 
-        public UserRepository(MyDbContext context)
+        public UserRepository(Data.DBContext context)
         {
             _context = context;
         }
@@ -20,10 +20,10 @@ namespace guest_house_management_backend.Repositories.UserRepo
         public async Task AddUserAsync(User user)
         {
             await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
+            await SaveChangesAsync();
         }
 
-        public async Task<User?> GetByIdAsync(int id)
+        public async Task<User?> GetByIdAsync(Guid id)
         {
             return await _context.Users.FindAsync(id);
         }
@@ -33,7 +33,7 @@ namespace guest_house_management_backend.Repositories.UserRepo
             return await _context.Users.ToListAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(Guid id)
         {
             var user = await _context.Users.FindAsync(id);
             if (user == null) {
@@ -41,13 +41,13 @@ namespace guest_house_management_backend.Repositories.UserRepo
             }
 
             _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            await SaveChangesAsync();
         }
 
         public async Task UpdateAsync(User user)
         {
             _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            await SaveChangesAsync();
         }
 
         public async Task SaveChangesAsync()

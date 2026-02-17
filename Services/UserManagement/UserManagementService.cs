@@ -16,24 +16,33 @@ namespace guest_house_management_backend.Services.UserManagement
             _roleRepository = roleRepository;
         }
 
-        public async Task CreateUserAsync(CreateUserDto user)
+        public async Task CreateUserAsync(CreateUserDto userDto)
         {
-            int RoleID = await _roleRepository.GetRoleIdByNameAsync(user.Role);
-
+            var existingUser = await _userRepository.GetUserByEmailAsync(userDto.Email);
+            if (existingUser != null)
+            {
+                throw new InvalidOperationException("User with this email already exists.");
+            }
+            Guid roleId = await _roleRepository.GetRoleIdByNameAsync(userDto.Role);
+       
             User newUser = new User
             {
-                Name = user.Name,
-                Email = user.Email,
-                HashPassword = BCrypt.Net.BCrypt.HashPassword(user.Password),
-                RoleId = RoleID,
+                Name = userDto.Name,
+                Email = userDto.Email,
+                HashPassword = BCrypt.Net.BCrypt.HashPassword(userDto.Password),
+                RoleId = roleId,
             };
 
             await _userRepository.AddUserAsync(newUser);
         }
 
-        public async Task DeleteUserAsync(int Id)
+        public async Task DeleteUserAsync(Guid id)
         {
-            await _userRepository.DeleteAsync(Id);
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+                throw new KeyNotFoundException("User not found.");
+
+            await _userRepository.DeleteAsync(id);
         }
 
         public async Task<IEnumerable<User>> GetAllUsersAsync()
@@ -41,9 +50,12 @@ namespace guest_house_management_backend.Services.UserManagement
             return await _userRepository.GetAllAsync();
         }
 
-        public async Task<User?> GetUserByIdAsync(int id)
+        public async Task<User?> GetUserByIdAsync(Guid id)
         {
-            return await _userRepository.GetByIdAsync(id);
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+                throw new KeyNotFoundException("User not found.");
+            return user;
         }
     }
 }

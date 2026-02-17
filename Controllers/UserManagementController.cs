@@ -18,35 +18,75 @@ namespace guest_house_management_backend.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateUser(CreateUserDto dto)
+        public async Task<IActionResult> CreateUser(CreateUserDto createUserDto)
         {
-            await _userManagementService.CreateUserAsync(dto);
-            return Ok("User created successfully");
+            try
+            {
+                await _userManagementService.CreateUserAsync(createUserDto);
+                return Ok(new { message = "User created successfully" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Something went wrong." });
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
-            var users = await _userManagementService.GetAllUsersAsync();
-            return Ok(users);
+            try
+            {
+                var users = await _userManagementService.GetAllUsersAsync();
+                return Ok(users);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Something went wrong." });
+            }
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetUserById(int id)
+        public async Task<IActionResult> GetUserById(Guid id)
         {
-            var user = await _userManagementService.GetUserByIdAsync(id);
-
-            if (user == null)
-                return NotFound("User not found");
-
-            return Ok(user);
+            try
+            {
+                var user = await _userManagementService.GetUserByIdAsync(id);
+                return Ok(user);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Something went wrong." });
+            }
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<IActionResult> DeleteUser(Guid id)
         {
-            await _userManagementService.DeleteUserAsync(id);
-            return Ok("User deleted successfully");
+            try
+            {
+                await _userManagementService.DeleteUserAsync(id);
+                return Ok(new { message = "User deleted successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Something went wrong." });
+            }
         }
 
     }
