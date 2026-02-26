@@ -89,9 +89,9 @@ namespace guest_house_management_backend.Services.Auth
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<(bool Success, string Message)> ChangeUserPassword(Guid UserId, ChangePasswordDto changePasswordRequest)
+        public async Task<(bool Success, string Message)> ChangeUserPassword(int userId, ChangePasswordDto changePasswordRequest)
         {
-            var user = await _userRepository.GetByIdAsync(UserId);
+            var user = await _userRepository.GetByIdAsync(userId);
 
             if (user == null)
                 throw new KeyNotFoundException("User not found.");
@@ -131,7 +131,7 @@ namespace guest_house_management_backend.Services.Auth
             await _userTokenRepository.SaveChangesAsync();
 
             var resetLink =
-                $"http://localhost:5173/verify-reset-password?email={user.Email}&token={token}";
+                $"http://localhost:5173/reset-password?email={user.Email}&token={token}";
 
             await _emailSender.SendEmailASync(
                 user.Email,

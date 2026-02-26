@@ -7,7 +7,7 @@ namespace guest_house_management_backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles ="admin")]
+    //[Authorize(Roles ="admin")]
     public class UserManagementController : ControllerBase
     {
         private readonly IUserManagementService _userManagementService;
@@ -54,7 +54,7 @@ namespace guest_house_management_backend.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetUserById(Guid id)
+        public async Task<IActionResult> GetUserById(int id)
         {
             try
             {
@@ -72,7 +72,7 @@ namespace guest_house_management_backend.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(Guid id)
+        public async Task<IActionResult> DeleteUser(int id)
         {
             try
             {
@@ -82,6 +82,28 @@ namespace guest_house_management_backend.Controllers
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Something went wrong." });
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(int id, UpdateUserDto updateUserDto)
+        {
+            try
+            {
+                await _userManagementService.UpdateUserAsync(id, updateUserDto);
+                return Ok(new { message = "User updated successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
             }
             catch (Exception)
             {

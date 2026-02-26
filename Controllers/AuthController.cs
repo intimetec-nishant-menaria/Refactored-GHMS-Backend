@@ -1,4 +1,5 @@
 ﻿using guest_house_management_backend.DTOs;
+using guest_house_management_backend.Models;
 using guest_house_management_backend.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -50,8 +51,13 @@ namespace guest_house_management_backend.Controllers
                     Expires = DateTime.UtcNow.AddDays(5)
                 };
                 Response.Cookies.Append("jwtToken", token, cookieOptions);
-                return Ok("Login successful");
-            }catch(UnauthorizedAccessException ex)
+                return Ok(new
+                {
+                    message = "Login successful",
+                    token = token,
+                });
+            }
+            catch(UnauthorizedAccessException ex)
             {
                 return Unauthorized(new {message = ex.Message});
             }catch(Exception ex)
@@ -103,7 +109,7 @@ namespace guest_house_management_backend.Controllers
             try
             {
                 var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
                     return Unauthorized(new { message = "Invalid user." });
 
                 var result = await _authService.ChangeUserPassword(userId, changePasswordRequest);
@@ -146,7 +152,7 @@ namespace guest_house_management_backend.Controllers
         }
 
         [HttpGet]
-        [Route("verify-forget-password")]
+        [Route("verifyForgetPassword")]
         public async Task<IActionResult> VerifyResetToken(string email, string token)
         {
             try
@@ -169,7 +175,7 @@ namespace guest_house_management_backend.Controllers
         }
 
         [HttpPost]
-        [Route("reset-password")]
+        [Route("resetPassword")]
         public async Task<IActionResult> ResetPassword(ResetPasswordDto resetPasswordRequest)
         {
             try
