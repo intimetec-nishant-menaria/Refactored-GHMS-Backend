@@ -4,7 +4,7 @@ namespace guest_house_management_backend.Models
 {
     public class Role
     {
-        public Guid Id { get; set; } 
+        public int Id { get; set; } 
         public RoleEnum RoleName { get; set; }
         public ICollection<User> Users { get; set; } = new List<User>(); 
     }
