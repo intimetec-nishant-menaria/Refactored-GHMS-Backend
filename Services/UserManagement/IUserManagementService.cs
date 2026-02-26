@@ -5,13 +5,13 @@ namespace guest_house_management_backend.Services.UserManagement
 {
     public interface IUserManagementService
     {
-        public Task<IEnumerable<User>> GetAllUsersAsync();
+        public Task<IEnumerable<UserResponseDto>> GetAllUsersAsync();
 
-        public Task<User?> GetUserByIdAsync(Guid id);
+        public Task<User?> GetUserByIdAsync(int id);
 
         public Task CreateUserAsync(CreateUserDto userDto);
 
-        public Task DeleteUserAsync(Guid Id);
+        public Task DeleteUserAsync(int Id);
 
 
     }

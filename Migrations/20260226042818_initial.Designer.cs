@@ -12,8 +12,8 @@ using guest_house_management_backend.Data;
 namespace guest_house_management_backend.Migrations
 {
     [DbContext(typeof(DBContext))]
-    [Migration("20260217105914_SeedRoles")]
-    partial class SeedRoles
+    [Migration("20260226042818_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,9 +27,11 @@ namespace guest_house_management_backend.Migrations
 
             modelBuilder.Entity("guest_house_management_backend.Models.Role", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("RoleName")
                         .HasColumnType("int");
@@ -41,19 +43,81 @@ namespace guest_house_management_backend.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            Id = 1,
                             RoleName = 1
                         },
                         new
                         {
-                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            Id = 2,
                             RoleName = 2
                         },
                         new
                         {
-                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
+                            Id = 3,
                             RoleName = 3
                         });
+                });
+
+            modelBuilder.Entity("guest_house_management_backend.Models.Room", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RoomNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RoomStatus")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("RoomStatusId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("RoomTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomTypeId");
+
+                    b.ToTable("Rooms");
+                });
+
+            modelBuilder.Entity("guest_house_management_backend.Models.RoomType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("PricePerNight")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("RoomTypeName")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RoomType");
                 });
 
             modelBuilder.Entity("guest_house_management_backend.Models.User", b =>
@@ -80,8 +144,8 @@ namespace guest_house_management_backend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -128,6 +192,17 @@ namespace guest_house_management_backend.Migrations
                     b.ToTable("UserTokens");
                 });
 
+            modelBuilder.Entity("guest_house_management_backend.Models.Room", b =>
+                {
+                    b.HasOne("guest_house_management_backend.Models.RoomType", "RoomType")
+                        .WithMany("Rooms")
+                        .HasForeignKey("RoomTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RoomType");
+                });
+
             modelBuilder.Entity("guest_house_management_backend.Models.User", b =>
                 {
                     b.HasOne("guest_house_management_backend.Models.Role", "Role")
@@ -153,6 +228,11 @@ namespace guest_house_management_backend.Migrations
             modelBuilder.Entity("guest_house_management_backend.Models.Role", b =>
                 {
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("guest_house_management_backend.Models.RoomType", b =>
+                {
+                    b.Navigation("Rooms");
                 });
 
             modelBuilder.Entity("guest_house_management_backend.Models.User", b =>

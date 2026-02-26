@@ -23,7 +23,7 @@ namespace guest_house_management_backend.Services.UserManagement
             {
                 throw new InvalidOperationException("User with this email already exists.");
             }
-            Guid roleId = await _roleRepository.GetRoleIdByNameAsync(userDto.Role);
+            int roleId = await _roleRepository.GetRoleIdByNameAsync(userDto.Role);
        
             User newUser = new User
             {
@@ -36,7 +36,7 @@ namespace guest_house_management_backend.Services.UserManagement
             await _userRepository.AddUserAsync(newUser);
         }
 
-        public async Task DeleteUserAsync(Guid id)
+        public async Task DeleteUserAsync(int id)
         {
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
@@ -45,12 +45,12 @@ namespace guest_house_management_backend.Services.UserManagement
             await _userRepository.DeleteAsync(id);
         }
 
-        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        public async Task<IEnumerable<UserResponseDto>> GetAllUsersAsync()
         {
             return await _userRepository.GetAllAsync();
         }
 
-        public async Task<User?> GetUserByIdAsync(Guid id)
+        public async Task<User?> GetUserByIdAsync(int id)
         {
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)

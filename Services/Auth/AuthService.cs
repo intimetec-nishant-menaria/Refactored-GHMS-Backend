@@ -89,7 +89,7 @@ namespace guest_house_management_backend.Services.Auth
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<(bool Success, string Message)> ChangeUserPassword(Guid UserId, ChangePasswordDto changePasswordRequest)
+        public async Task<(bool Success, string Message)> ChangeUserPassword(int UserId, ChangePasswordDto changePasswordRequest)
         {
             var user = await _userRepository.GetByIdAsync(UserId);
 

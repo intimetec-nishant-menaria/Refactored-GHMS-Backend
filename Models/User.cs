@@ -11,14 +11,13 @@ namespace guest_house_management_backend.Models
         public string Email { get; set; } = string.Empty;
         [Required]
         public string HashPassword { get; set; } = string.Empty;
-        public Guid RoleId { get; set; }
+        public int RoleId { get; set; }
         public Role Role { get; set; } = null!;
         public bool IsEmailConfirmed { get; set; } = false;
-        public bool isActive { get; set; } = false; 
+        public bool IsActive { get; set; } = false; 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         public ICollection<UserToken> Tokens { get; set; } = new List<UserToken>();
-
 
     }
 }

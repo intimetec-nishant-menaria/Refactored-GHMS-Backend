@@ -103,7 +103,7 @@ namespace guest_house_management_backend.Controllers
             try
             {
                 var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
                     return Unauthorized(new { message = "Invalid user." });
 
                 var result = await _authService.ChangeUserPassword(userId, changePasswordRequest);
@@ -146,7 +146,7 @@ namespace guest_house_management_backend.Controllers
         }
 
         [HttpGet]
-        [Route("verify-forget-password")]
+        [Route("verifyForgetPassword")]
         public async Task<IActionResult> VerifyResetToken(string email, string token)
         {
             try
@@ -169,7 +169,7 @@ namespace guest_house_management_backend.Controllers
         }
 
         [HttpPost]
-        [Route("reset-password")]
+        [Route("resetPassword")]
         public async Task<IActionResult> ResetPassword(ResetPasswordDto resetPasswordRequest)
         {
             try

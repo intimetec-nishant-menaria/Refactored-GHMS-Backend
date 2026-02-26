@@ -1,4 +1,5 @@
 ﻿using guest_house_management_backend.Data;
+using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +13,7 @@ namespace guest_house_management_backend.Repositories.UserRepo
         {
             _context = context;
         }
-        public async Task<User?> GetUserByEmailAsync(string email) 
+        public async Task<User?> GetUserByEmailAsync(string email)
         {
             return await _context.Users.Include(user => user.Role).FirstOrDefaultAsync(user => user.Email == email);
         }
@@ -23,20 +24,32 @@ namespace guest_house_management_backend.Repositories.UserRepo
             await SaveChangesAsync();
         }
 
-        public async Task<User?> GetByIdAsync(Guid id)
+        public async Task<User?> GetByIdAsync(int id)
         {
             return await _context.Users.FindAsync(id);
         }
 
-        public async Task<IEnumerable<User>> GetAllAsync()
+        public async Task<IEnumerable<UserResponseDto>> GetAllAsync()
         {
-            return await _context.Users.ToListAsync();
+            return await _context.Users
+             .Select(u => new UserResponseDto
+             {
+                 Id = u.Id,
+                 Name = u.Name,
+                 Email = u.Email,
+                 Role = u.Role.RoleName,
+                 IsActive = u.IsActive,
+                 IsEmailConfirmed = u.IsEmailConfirmed,
+                 CreatedAt = u.CreatedAt
+             })
+             .ToListAsync();
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(int id)
         {
             var user = await _context.Users.FindAsync(id);
-            if (user == null) {
+            if (user == null)
+            {
                 return;
             }
 

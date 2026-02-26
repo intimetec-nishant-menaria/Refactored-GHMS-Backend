@@ -7,11 +7,10 @@ namespace guest_house_management_backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles ="admin")]
+    //[Authorize(Roles ="admin")]
     public class UserManagementController : ControllerBase
     {
         private readonly IUserManagementService _userManagementService;
-
         public UserManagementController(IUserManagementService userManagementService)
         {
             _userManagementService = userManagementService;
@@ -54,7 +53,7 @@ namespace guest_house_management_backend.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetUserById(Guid id)
+        public async Task<IActionResult> GetUserById(int id)
         {
             try
             {
@@ -72,7 +71,7 @@ namespace guest_house_management_backend.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(Guid id)
+        public async Task<IActionResult> DeleteUser(int id)
         {
             try
             {

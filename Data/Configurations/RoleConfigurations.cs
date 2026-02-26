@@ -12,17 +12,17 @@ namespace guest_house_management_backend.Data.Configurations
             builder.HasData(
                 new Role
                 {
-                    Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                    Id = 1,
                     RoleName = RoleEnum.Admin
                 },
                 new Role
                 {
-                    Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    Id = 2,
                     RoleName = RoleEnum.Staff
                 },
                 new Role
                 {
-                    Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                    Id = 3,
                     RoleName = RoleEnum.Guest
                 }
             );
