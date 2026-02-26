@@ -19,7 +19,7 @@ namespace guest_house_management_backend.Repositories.UserTokenRepo
             await _context.UserTokens.AddAsync(token);
         }
 
-        public async Task<UserToken?> GetValidTokenAsync(Guid userId,string token, UserTokenEnum tokenType)
+        public async Task<UserToken?> GetValidTokenAsync(int userId,string token, UserTokenEnum tokenType)
         {
             return await _context.UserTokens
                 .Include(t => t.User)
