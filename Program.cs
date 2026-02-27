@@ -1,7 +1,7 @@
 using guest_house_management_backend.Data;
+using guest_house_management_backend.Extensions;
 using guest_house_management_backend.Middleware;
 using guest_house_management_backend.Repositories;
-
 using guest_house_management_backend.Repositories.RoleRepo;
 using guest_house_management_backend.Repositories.RoomRepo;
 using guest_house_management_backend.Repositories.UserRepo;
@@ -11,11 +11,7 @@ using guest_house_management_backend.Services.Email;
 using guest_house_management_backend.Services.Room;
 using guest_house_management_backend.Services.RoomType;
 using guest_house_management_backend.Services.UserManagement;
-
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,26 +36,7 @@ builder.Services.AddCors(options =>
                   .AllowCredentials();
         });
 });
-
-builder.Services.AddAuthentication(option =>
-{
-    option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    option.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-    .AddJwtBearer(option =>
-    {
-        option.SaveToken = true;
-        option.RequireHttpsMetadata = true;
-        option.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidAudience = builder.Configuration["JWT:ValidAudience"],
-            ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]!))
-        };
-    });
+builder.Services.AddJwtService(builder.Configuration);
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();

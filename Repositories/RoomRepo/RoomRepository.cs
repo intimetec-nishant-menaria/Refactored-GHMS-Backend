@@ -81,14 +81,13 @@ namespace guest_house_management_backend.Repositories.RoomRepo
         {
             return await _context.RoomTypes
                 .Include(rt => rt.RoomTypeAmenities)
-                    .ThenInclude(rta => rta.Amenity)
+                .ThenInclude(rta => rta.Amenity)
                 .FirstOrDefaultAsync(rt => rt.Id == roomTypeId);
         }
 
         public async Task<bool> DeleteRoomByIdAsync(int id)
         {
             var room = await _context.Rooms.FindAsync(id);
-
             if(room == null)
                 return false;
 
@@ -111,7 +110,8 @@ namespace guest_house_management_backend.Repositories.RoomRepo
                 RoomNumber = room.RoomNumber,
                 RoomTypeName = room.RoomType.RoomTypeName.ToString(),
                 Capacity = room.RoomType.Capacity,
-                PricePerNight = room.RoomType.PricePerNight
+                PricePerNight = room.RoomType.PricePerNight,
+                RoomStatus = room.RoomStatus
             }).ToListAsync();
         }
     }

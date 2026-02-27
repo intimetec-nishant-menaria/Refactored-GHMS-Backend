@@ -74,19 +74,17 @@ namespace guest_house_management_backend.Services.Room
             if(existingRoom == null)
                 throw new Exception("Room not found.");
 
-            bool roomNumberExists = await _roomRepository.RoomNumberExistsAsync(updateRoomRequest.RoomNumber);
+            if(existingRoom.RoomNumber != updateRoomRequest.RoomNumber)
+            {
+                bool roomNumberExists = await _roomRepository.RoomNumberExistsAsync(updateRoomRequest.RoomNumber);
 
-            if(roomNumberExists)
-                throw new Exception("Room number already exists.");
-
-            var selectedRoomType = await _roomTypeRepository
-                .GetRoomTypeByIdAsync(roomId);
-
-            if(selectedRoomType == null)
-                throw new Exception("Invalid Room Type.");
+                if (roomNumberExists)
+                    throw new Exception("Room number already exists.");
+            }
 
             existingRoom.RoomNumber = updateRoomRequest.RoomNumber;
-            existingRoom.RoomTypeId = updateRoomRequest.RoomType;
+            existingRoom.RoomTypeId = updateRoomRequest.RoomTypeId;
+            existingRoom.RoomStatus = updateRoomRequest.RoomStatus;
             existingRoom.UpdatedAt = DateTime.UtcNow;
 
             await _roomRepository.UpdateRoomAsync(existingRoom);
