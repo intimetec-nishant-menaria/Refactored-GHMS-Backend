@@ -5,12 +5,23 @@ namespace guest_house_management_backend.Models
 {
     public class Guest
     {
-        public Guid Id { get; set; }
-
+        public int Id { get; set; }
         [Required]
-        public Guid UserId { get; set; }
-        public User User { get; set; } = null!;
-
+        [MaxLength(100)]
+        public string Name { get; set; } = string.Empty;
+        [Required]
+        [Phone]
+        public string Contact { get; set; } = string.Empty;
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+        [Required]
+        public string IDProof { get; set; } = string.Empty;
+        [Required]
+        public string Address { get; set; } = string.Empty;
+        [Required]
+        [Phone]
+        public string EmergencyContact { get; set; } = string.Empty;
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }

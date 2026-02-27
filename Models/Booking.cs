@@ -13,7 +13,7 @@ namespace guest_house_management_backend.Models
         public Room Room { get; set; } = null!;
 
         [Required]
-        public Guid GuestId { get; set; }
+        public int GuestId { get; set; }
         public Guest Guest { get; set; } = null!;
 
         [Required]

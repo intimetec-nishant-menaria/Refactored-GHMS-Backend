@@ -12,12 +12,12 @@ namespace guest_house_management_backend.Data
         public DbSet<RoomType> RoomTypes { get; set; }
         public DbSet<RoomAmenity> Amenities { get; set; }
         public DbSet<RoomTypeAmenity> RoomTypeAmenities { get; set; }
-
+        public DbSet<Guest> Guest { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(DBContext).Assembly);
             modelBuilder.Entity<Role>().HasData(
                 new Role
                 {
@@ -35,8 +35,6 @@ namespace guest_house_management_backend.Data
                     RoleName = RoleEnum.Guest
                 }
             );
-
-
 
             modelBuilder.Entity<RoomAmenity>().HasData(
                 new RoomAmenity

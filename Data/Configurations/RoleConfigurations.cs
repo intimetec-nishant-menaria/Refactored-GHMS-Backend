@@ -1,7 +1,8 @@
-﻿using guest_house_management_backend.Models;
-using guest_house_management_backend.Enums;
+﻿using guest_house_management_backend.Enums;
+using guest_house_management_backend.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Reflection.Emit;
 
 namespace guest_house_management_backend.Data.Configurations
 {
@@ -17,7 +18,7 @@ namespace guest_house_management_backend.Data.Configurations
                 },
                 new Role
                 {
-                    Id =2,
+                    Id = 2,
                     RoleName = RoleEnum.Staff
                 },
                 new Role
