@@ -7,7 +7,7 @@ namespace guest_house_management_backend.Models
     {
         public Guid Id {  get; set; } = Guid.NewGuid();
         [Required]
-        public Guid UserId { get; set; }
+        public int UserId { get; set; }
         public User User { get; set; } = null!;
         [Required]
         public string Token { get; set; } = string.Empty;

@@ -131,7 +131,7 @@ namespace guest_house_management_backend.Services.Auth
             await _userTokenRepository.SaveChangesAsync();
 
             var resetLink =
-                $"http://localhost:5173/verify-reset-password?email={user.Email}&token={token}";
+                $"http://localhost:5173/reset-password?email={user.Email}&token={token}";
 
             await _emailSender.SendEmailASync(
                 user.Email,

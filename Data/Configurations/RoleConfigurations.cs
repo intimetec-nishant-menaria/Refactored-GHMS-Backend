@@ -17,7 +17,7 @@ namespace guest_house_management_backend.Data.Configurations
                 },
                 new Role
                 {
-                    Id = 2,
+                    Id =2,
                     RoleName = RoleEnum.Staff
                 },
                 new Role

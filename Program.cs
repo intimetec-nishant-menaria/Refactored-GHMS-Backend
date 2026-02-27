@@ -1,4 +1,7 @@
 using guest_house_management_backend.Data;
+using guest_house_management_backend.Middleware;
+using guest_house_management_backend.Repositories;
+
 using guest_house_management_backend.Repositories.RoleRepo;
 using guest_house_management_backend.Repositories.RoomRepo;
 using guest_house_management_backend.Repositories.UserRepo;
@@ -6,7 +9,9 @@ using guest_house_management_backend.Repositories.UserTokenRepo;
 using guest_house_management_backend.Services.Auth;
 using guest_house_management_backend.Services.Email;
 using guest_house_management_backend.Services.Room;
+using guest_house_management_backend.Services.RoomType;
 using guest_house_management_backend.Services.UserManagement;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -29,12 +34,13 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins(builder.Configuration["Frontend:URL"]!)
+            policy.WithOrigins("http://localhost:5173")
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
         });
 });
+
 builder.Services.AddAuthentication(option =>
 {
     option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -59,10 +65,14 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRoleRepository , RoleRepository>();
 builder.Services.AddScoped<IUserManagementService , UserManagementService>();
+
 builder.Services.AddScoped<IEmailSender , EmailSender>();
 builder.Services.AddScoped<IUserTokenRepository , UserTokenRepository>();
 builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 builder.Services.AddScoped<IRoomService, RoomService>();
+
+builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
+builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 
 
 var app = builder.Build();
@@ -73,6 +83,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseGlobalExceptionMiddleware();
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 

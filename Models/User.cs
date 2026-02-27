@@ -4,8 +4,8 @@ namespace guest_house_management_backend.Models
 {
     public class User
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
-        [Required]
+        public int Id { get; set; }
+        [Required] 
         public string Name { get; set; } = string.Empty;
         [Required]
         public string Email { get; set; } = string.Empty;

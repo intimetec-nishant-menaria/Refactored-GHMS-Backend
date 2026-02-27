@@ -31,6 +31,7 @@ namespace guest_house_management_backend.Services.UserManagement
                 Email = userDto.Email,
                 HashPassword = BCrypt.Net.BCrypt.HashPassword(userDto.Password),
                 RoleId = roleId,
+                IsActive = userDto.IsActive,
             };
 
             await _userRepository.AddUserAsync(newUser);
@@ -56,6 +57,22 @@ namespace guest_house_management_backend.Services.UserManagement
             if (user == null)
                 throw new KeyNotFoundException("User not found.");
             return user;
+        }
+
+        public async Task UpdateUserAsync(int id, UpdateUserDto dto)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null) throw new KeyNotFoundException("User not found");
+
+            int roleId = await _roleRepository.GetRoleIdByNameAsync(dto.Role);
+
+            user.Name = dto.Name;
+            user.Email = dto.Email;
+            user.RoleId = roleId;
+            user.IsActive = dto.IsActive;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _userRepository.SaveChangesAsync();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using guest_house_management_backend.DTOs;
+using guest_house_management_backend.Models;
 using guest_house_management_backend.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -50,8 +51,13 @@ namespace guest_house_management_backend.Controllers
                     Expires = DateTime.UtcNow.AddDays(5)
                 };
                 Response.Cookies.Append("jwtToken", token, cookieOptions);
-                return Ok("Login successful");
-            }catch(UnauthorizedAccessException ex)
+                return Ok(new
+                {
+                    message = "Login successful",
+                    token = token,
+                });
+            }
+            catch(UnauthorizedAccessException ex)
             {
                 return Unauthorized(new {message = ex.Message});
             }catch(Exception ex)

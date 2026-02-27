@@ -1,6 +1,5 @@
 ﻿using guest_house_management_backend.Enums;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace guest_house_management_backend.Models
 {
@@ -17,9 +16,10 @@ namespace guest_house_management_backend.Models
 
         [Required]
         public Guid RoomStatusId { get; set; }
-        public RoomStatusEnum RoomStatus { get; set; }
+        public Enums.RoomStatusEnum RoomStatus { get; set; }
+        
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
-        //public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+        public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     }
 }

@@ -13,6 +13,7 @@ namespace guest_house_management_backend.Services.UserManagement
 
         public Task DeleteUserAsync(int Id);
 
+        public Task UpdateUserAsync(int id, UpdateUserDto dto);
 
     }
 }

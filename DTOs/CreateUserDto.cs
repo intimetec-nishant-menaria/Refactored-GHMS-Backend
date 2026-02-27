@@ -16,5 +16,6 @@ namespace guest_house_management_backend.DTOs
         public string Password { get; set; } = string.Empty;
         [Required(ErrorMessage = "Role is required")]
         public RoleEnum Role { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 }

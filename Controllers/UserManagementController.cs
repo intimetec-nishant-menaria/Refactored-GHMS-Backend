@@ -88,5 +88,27 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(int id, UpdateUserDto updateUserDto)
+        {
+            try
+            {
+                await _userManagementService.UpdateUserAsync(id, updateUserDto);
+                return Ok(new { message = "User updated successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Something went wrong." });
+            }
+        }
+
     }
 }
