@@ -1,5 +1,5 @@
 ﻿using guest_house_management_backend.DTOs;
-using guest_house_management_backend.Repositories;
+using guest_house_management_backend.Repositories.RoomTypeRepo;
 
 namespace guest_house_management_backend.Services.RoomType
 {
