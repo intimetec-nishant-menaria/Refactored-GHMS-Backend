@@ -9,10 +9,12 @@ namespace guest_house_management_backend.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserToken> UserTokens { get; set; }
+        public DbSet<Room> Room { get; set; }
         public DbSet<RoomType> RoomTypes { get; set; }
         public DbSet<RoomAmenity> Amenities { get; set; }
         public DbSet<RoomTypeAmenity> RoomTypeAmenities { get; set; }
         public DbSet<Guest> Guest { get; set; }
+        public DbSet<Booking> Bookings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
