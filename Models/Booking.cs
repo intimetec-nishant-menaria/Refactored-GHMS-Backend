@@ -6,10 +6,10 @@ namespace guest_house_management_backend.Models
 {
     public class Booking
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
 
         [Required]
-        public Guid RoomId { get; set; }
+        public int RoomId { get; set; }
         public Room Room { get; set; } = null!;
 
         [Required]
