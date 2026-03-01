@@ -12,7 +12,7 @@ using guest_house_management_backend.Data;
 namespace guest_house_management_backend.Migrations
 {
     [DbContext(typeof(DBContext))]
-    [Migration("20260227071613_InitialMigration")]
+    [Migration("20260301075431_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -27,9 +27,11 @@ namespace guest_house_management_backend.Migrations
 
             modelBuilder.Entity("guest_house_management_backend.Models.Booking", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CheckInDate")
                         .HasColumnType("datetime2");
@@ -43,11 +45,11 @@ namespace guest_house_management_backend.Migrations
                     b.Property<int>("GuestId")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("RoomId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("RoomId1")
+                    b.Property<int>("RoomId")
                         .HasColumnType("int");
+
+                    b.Property<string>("SpecialRequests")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -55,13 +57,16 @@ namespace guest_house_management_backend.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<decimal>("price")
+                        .HasColumnType("decimal(18,2)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("GuestId");
 
-                    b.HasIndex("RoomId1");
+                    b.HasIndex("RoomId");
 
-                    b.ToTable("Booking");
+                    b.ToTable("Bookings");
                 });
 
             modelBuilder.Entity("guest_house_management_backend.Models.Guest", b =>
@@ -119,7 +124,7 @@ namespace guest_house_management_backend.Migrations
                             Id = 1,
                             Address = "Delhi",
                             Contact = "9876543210",
-                            CreatedAt = new DateTime(2026, 2, 27, 7, 16, 12, 806, DateTimeKind.Utc).AddTicks(3043),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "rahul@example.com",
                             EmergencyContact = "9999999999",
                             IDProof = "Aadhar1234",
@@ -130,7 +135,7 @@ namespace guest_house_management_backend.Migrations
                             Id = 2,
                             Address = "Mumbai",
                             Contact = "9123456780",
-                            CreatedAt = new DateTime(2026, 2, 27, 7, 16, 12, 806, DateTimeKind.Utc).AddTicks(3046),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "priya@example.com",
                             EmergencyContact = "8888888888",
                             IDProof = "Passport5678",
@@ -146,6 +151,9 @@ namespace guest_house_management_backend.Migrations
 
                     b.Property<Guid>("BookingId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("BookingId1")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("datetime2");
@@ -166,7 +174,7 @@ namespace guest_house_management_backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BookingId");
+                    b.HasIndex("BookingId1");
 
                     b.ToTable("Payment");
                 });
@@ -328,7 +336,7 @@ namespace guest_house_management_backend.Migrations
                         {
                             Id = 1,
                             Capacity = 1,
-                            CreatedAt = new DateTime(2026, 2, 27, 7, 16, 12, 805, DateTimeKind.Utc).AddTicks(7107),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             PricePerNight = 1500m,
                             RoomTypeName = 1
                         },
@@ -336,7 +344,7 @@ namespace guest_house_management_backend.Migrations
                         {
                             Id = 2,
                             Capacity = 2,
-                            CreatedAt = new DateTime(2026, 2, 27, 7, 16, 12, 805, DateTimeKind.Utc).AddTicks(7111),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             PricePerNight = 2500m,
                             RoomTypeName = 2
                         },
@@ -344,7 +352,7 @@ namespace guest_house_management_backend.Migrations
                         {
                             Id = 3,
                             Capacity = 4,
-                            CreatedAt = new DateTime(2026, 2, 27, 7, 16, 12, 805, DateTimeKind.Utc).AddTicks(7113),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             PricePerNight = 5000m,
                             RoomTypeName = 3
                         });
@@ -486,7 +494,7 @@ namespace guest_house_management_backend.Migrations
 
                     b.HasOne("guest_house_management_backend.Models.Room", "Room")
                         .WithMany("Bookings")
-                        .HasForeignKey("RoomId1")
+                        .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -499,7 +507,7 @@ namespace guest_house_management_backend.Migrations
                 {
                     b.HasOne("guest_house_management_backend.Models.Booking", "Booking")
                         .WithMany("Payments")
-                        .HasForeignKey("BookingId")
+                        .HasForeignKey("BookingId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
