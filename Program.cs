@@ -1,11 +1,13 @@
 using guest_house_management_backend.Data;
 using guest_house_management_backend.Middleware;
-using guest_house_management_backend.Repositories;
+using guest_house_management_backend.Repositories.BookingRepo;
 using guest_house_management_backend.Repositories.GuestRepo;
 using guest_house_management_backend.Repositories.RoleRepo;
+using guest_house_management_backend.Repositories.RoomTypeRepo;
 using guest_house_management_backend.Repositories.UserRepo;
 using guest_house_management_backend.Repositories.UserTokenRepo;
 using guest_house_management_backend.Services.Auth;
+using guest_house_management_backend.Services.Bookings;
 using guest_house_management_backend.Services.Email;
 using guest_house_management_backend.Services.Guest;
 using guest_house_management_backend.Services.RoomType;
@@ -73,6 +75,9 @@ builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 
 builder.Services.AddScoped<IGuestRepository, GuestRepository>();
 builder.Services.AddScoped<IGuestService, GuestService>();
+
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IBookingService, BookingService>();
 
 var app = builder.Build();
 
