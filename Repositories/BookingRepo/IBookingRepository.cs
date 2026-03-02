@@ -14,5 +14,7 @@ namespace guest_house_management_backend.Repositories.BookingRepo
             DateTime CheckIn,
             DateTime CheckOut,
             int? excludeBookingId = null);
+        Task<Booking?> GetBookingWithDetailsAsync(int bookingId);
+        Task SaveChangesAsync();
     }
 }

@@ -52,5 +52,21 @@ namespace guest_house_management_backend.Repositories.BookingRepo
                             CheckOut > b.CheckInDate)
                 .AnyAsync();
         }
+
+        public async Task<Booking?> GetBookingWithDetailsAsync(int bookingId)
+        {
+            return await _context.Bookings
+                .Include(b => b.Guest)
+                .Include(b => b.Room)
+                    .ThenInclude(b => b.RoomStatus)
+                .Include(b => b.Room)
+                    .ThenInclude(b => b.RoomType)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
     }
 }

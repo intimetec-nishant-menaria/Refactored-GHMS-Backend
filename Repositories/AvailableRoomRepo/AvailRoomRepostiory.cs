@@ -16,7 +16,7 @@ namespace guest_house_management_backend.Repositories.AvailableRoomRepo
             var bookedRoomIds = await _context.Bookings
                  .Where(b =>
                      b.Status != Enums.BookingStatusEnum.Cancelled &&
-                     b.Status != Enums.BookingStatusEnum.Completed &&
+                     b.Status != Enums.BookingStatusEnum.CheckedOut &&
                      b.CheckInDate < checkOut &&
                      b.CheckOutDate > checkIn)
                  .Select(b => b.RoomId)
