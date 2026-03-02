@@ -45,7 +45,7 @@ namespace guest_house_management_backend.Services.Auth
             await _userRepository.AddUserAsync(newUser);
         }
 
-        public async Task<string?> LoginUserAsync(LoginDto loginRequest)
+        public async Task<(string? token , User user)> LoginUserAsync(LoginDto loginRequest)
         {
             var user = await _userRepository.GetUserByEmailAsync(loginRequest.Email);
 
@@ -57,7 +57,7 @@ namespace guest_house_management_backend.Services.Auth
             {
                 throw new UnauthorizedAccessException("Invalid password.");
             }
-            return CreateToken(user);
+            return (CreateToken(user) , user);
         }
 
         private bool VerifyUserPassword(string password, string hashPassword)
@@ -70,8 +70,10 @@ namespace guest_house_management_backend.Services.Auth
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier , user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Name),
                 new Claim(ClaimTypes.Email , user.Email),
-                new Claim(ClaimTypes.Role ,user.Role.RoleName.ToString())
+                new Claim(ClaimTypes.Role ,user.Role.RoleName.ToString()),
+                new Claim("isActive" ,user.IsActive.ToString())
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]!));

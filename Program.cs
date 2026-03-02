@@ -2,11 +2,13 @@ using guest_house_management_backend.Data;
 using guest_house_management_backend.Extensions;
 using guest_house_management_backend.Middleware;
 using guest_house_management_backend.Repositories;
+using guest_house_management_backend.Repositories.BookingRepo;
 using guest_house_management_backend.Repositories.RoleRepo;
 using guest_house_management_backend.Repositories.RoomRepo;
 using guest_house_management_backend.Repositories.UserRepo;
 using guest_house_management_backend.Repositories.UserTokenRepo;
 using guest_house_management_backend.Services.Auth;
+using guest_house_management_backend.Services.BookingService;
 using guest_house_management_backend.Services.Email;
 using guest_house_management_backend.Services.Room;
 using guest_house_management_backend.Services.RoomType;
@@ -30,7 +32,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173")
+            policy.WithOrigins(builder.Configuration["Frontend:URL"]!)
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
@@ -42,15 +44,14 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRoleRepository , RoleRepository>();
 builder.Services.AddScoped<IUserManagementService , UserManagementService>();
-
-builder.Services.AddScoped<IEmailSender , EmailSender>();
+builder.Services.AddTransient<IEmailSender , EmailSender>();
 builder.Services.AddScoped<IUserTokenRepository , UserTokenRepository>();
 builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 builder.Services.AddScoped<IRoomService, RoomService>();
-
 builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
-
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IBookingService,BookingSerivce>();
 
 var app = builder.Build();
 
@@ -60,7 +61,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseGlobalExceptionMiddleware();
+//app.UseGlobalExceptionMiddleware();
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 

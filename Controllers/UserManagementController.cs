@@ -7,7 +7,7 @@ namespace guest_house_management_backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize(Roles ="admin")]
+    [Authorize(Roles ="Admin")]
     public class UserManagementController : ControllerBase
     {
         private readonly IUserManagementService _userManagementService;

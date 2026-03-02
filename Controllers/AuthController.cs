@@ -1,5 +1,5 @@
 ﻿using guest_house_management_backend.DTOs;
-using guest_house_management_backend.Models;
+using guest_house_management_backend.Enums;
 using guest_house_management_backend.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,14 +23,18 @@ namespace guest_house_management_backend.Controllers
         public IActionResult GetMe()
         {
             var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var name = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
             var email = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
             var role = HttpContext.User.FindFirst(ClaimTypes.Role)?.Value;
+            var isActive = HttpContext.User.FindFirst("isActive")?.Value;
 
             return Ok(new
             {
                 UserId =userId,
+                Name = name,
                 Email = email,
-                Role = role
+                Role = role,
+                IsActive = isActive
             });
         }
 
@@ -40,21 +44,30 @@ namespace guest_house_management_backend.Controllers
         {
             try
             {
-                var token = await _authService.LoginUserAsync(loginRequest);
-                if (token == null)
+                var res = await _authService.LoginUserAsync(loginRequest);
+                if (res.token == null)
                     return Unauthorized("Invalid Credentials");
                 var cookieOptions = new CookieOptions
                 {
-                    HttpOnly = false,
-                    Secure = false,
-                    SameSite = SameSiteMode.Strict,
-                    Expires = DateTime.UtcNow.AddDays(5)
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.None,
+                    Expires = DateTime.UtcNow.AddDays(5),
+                    Path = "/"
                 };
-                Response.Cookies.Append("jwtToken", token, cookieOptions);
+                Response.Cookies.Append("jwtToken", res.token, cookieOptions);
+                var resUser = new UserResponseDto
+                {
+                    Id = res.user.Id,
+                    Name = res.user.Name,
+                    Email = res.user.Email,
+                    Role = (RoleEnum)res.user.RoleId,
+                    IsActive = res.user.IsActive
+                };
                 return Ok(new
                 {
                     message = "Login successful",
-                    token = token,
+                    user = resUser,
                 });
             }
             catch(UnauthorizedAccessException ex)
@@ -85,7 +98,6 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
-        [Authorize]
         [HttpPost]
         [Route("logout")]
         public IActionResult Logout()

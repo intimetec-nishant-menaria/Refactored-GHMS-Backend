@@ -108,6 +108,7 @@ namespace guest_house_management_backend.Repositories.RoomRepo
             {
                 Id = room.Id,
                 RoomNumber = room.RoomNumber,
+                RoomTypeId = room.RoomTypeId,
                 RoomTypeName = room.RoomType.RoomTypeName.ToString(),
                 Capacity = room.RoomType.Capacity,
                 PricePerNight = room.RoomType.PricePerNight,
