@@ -4,7 +4,7 @@
     {
         Booked = 1,
         CheckedIn = 2,
-        Completed = 3,
+        CheckedOut = 3,
         Cancelled = 4
     }
 }

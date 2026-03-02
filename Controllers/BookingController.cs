@@ -9,9 +9,11 @@ namespace guest_house_management_backend.Controllers
     public class BookingController : Controller
     {
         private readonly IBookingService _service;
-        public BookingController(IBookingService service)
+        private readonly IBookingCheckInOutService _bookingService;
+        public BookingController(IBookingService service, IBookingCheckInOutService bookingService)
         {
             _service = service;
+            _bookingService = bookingService;
         }
 
         [HttpGet]
@@ -57,6 +59,20 @@ namespace guest_house_management_backend.Controllers
             {
                 message = "Booking deleted successfully."
             });
+        }
+
+        [HttpPost("{bookingId}/checkin")]
+        public async Task<IActionResult> CheckIn(int bookingId)
+        {
+            var checkIn = await _bookingService.CheckInAsync(bookingId);
+            return Ok(checkIn);
+        }
+
+        [HttpPost("{bookingId}/checkout")]
+        public async Task<IActionResult> CheckOut(int bookingId)
+        {
+            var checkOut = await _bookingService.CheckOutAsync(bookingId);
+            return Ok(checkOut);
         }
     }
 }

@@ -80,6 +80,7 @@ builder.Services.AddScoped<IGuestService, GuestService>();
 
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IBookingCheckInOutService, BookingCheckInOutService>();
 
 builder.Services.AddScoped<IAvailRoomRepository, AvailRoomRepostiory>();
 builder.Services.AddScoped<IAvailRoomService, AvailRoomService>();
