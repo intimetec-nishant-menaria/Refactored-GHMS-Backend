@@ -5,7 +5,7 @@ namespace guest_house_management_backend.Models
 {
     public class RoomStatus
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
 
         [Required]
         public RoomStatusEnum Status { get; set; }

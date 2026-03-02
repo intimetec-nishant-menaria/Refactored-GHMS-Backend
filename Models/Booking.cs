@@ -18,10 +18,15 @@ namespace guest_house_management_backend.Models
         public DateTime CheckInDate { get; set; }
         [Required]
         public DateTime CheckOutDate { get; set; }
+        public DateTime? ActualCheckInTime { get; set; }
+        public DateTime? ActualCheckOutTime { get; set; }
         [Required]
         public BookingStatusEnum Status { get; set; }
         public decimal price { get; set; }
+        public decimal? FinalBillAmount { get; set; }
+        public bool IsPaymentCompleted { get; set; } = false;
         public string? SpecialRequests { get; set; }
+
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
