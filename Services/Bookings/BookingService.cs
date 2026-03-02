@@ -42,7 +42,7 @@ namespace guest_house_management_backend.Services.Bookings
                 {
                     throw new InvalidOperationException("Room not available.");
                 }
-                var room = await _context.Rooms
+                var room = await _context.Room
                             .Include(r => r.RoomType)
                             .FirstOrDefaultAsync(r => r.Id == createRequest.RoomId);
                 if(room == null)
