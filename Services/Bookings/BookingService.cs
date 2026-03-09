@@ -1,7 +1,9 @@
 ﻿using guest_house_management_backend.Data;
 using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Models;
+using guest_house_management_backend.Repositories.AvailableRoomRepo;
 using guest_house_management_backend.Repositories.BookingRepo;
+using guest_house_management_backend.Repositories.RoomRepo;
 using Microsoft.EntityFrameworkCore;
 
 namespace guest_house_management_backend.Services.Bookings
@@ -9,20 +11,22 @@ namespace guest_house_management_backend.Services.Bookings
     public class BookingService : IBookingService
     {
         private readonly IBookingRepository _repository;
+        private readonly IAvailRoomRepository _availRoomRepository;
         private readonly DBContext _context;
 
-        public BookingService(IBookingRepository repository, DBContext context)
+        public BookingService(IBookingRepository repository,IAvailRoomRepository availRoomRepository ,DBContext context)
         {
             _repository = repository;
+            _availRoomRepository = availRoomRepository;
             _context = context;
         }
 
-        public async Task<List<Booking>> GetAllAsync()
+        public async Task<List<BookingResponseDto>> GetAllAsync()
         {
             return await _repository.GetAllAsync();
         }
 
-        public async Task<Booking?> GetByIdAsync(int id)
+        public async Task<BookingResponseDto?> GetByIdAsync(int id)
         {
             return await _repository.GetByIdAsync(id);
         }
@@ -34,22 +38,19 @@ namespace guest_house_management_backend.Services.Bookings
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var isAvailable = await _repository.IsRoomAvailableAsync(
-                    createRequest.RoomId,
+                var availableRooms = await _availRoomRepository.GetAvailableRoomAsync(
                     createRequest.CheckInDate,
                     createRequest.CheckOutDate);
-                if (!isAvailable)
+
+                var room = availableRooms.FirstOrDefault(r => r.Id == createRequest.RoomId);
+
+                if (room == null)
                 {
                     throw new InvalidOperationException("Room not available.");
                 }
-                var room = await _context.Room
-                            .Include(r => r.RoomType)
-                            .FirstOrDefaultAsync(r => r.Id == createRequest.RoomId);
-                if(room == null)
-                {
-                    throw new KeyNotFoundException("Room not found");
-                }
+
                 var totalPrice = CalculatePrice(room, createRequest.CheckInDate, createRequest.CheckOutDate);
+
                 var booking = new Booking
                 {
                     GuestId = createRequest.GuestId,
@@ -60,9 +61,11 @@ namespace guest_house_management_backend.Services.Bookings
                     price = totalPrice,
                     SpecialRequests = createRequest.SpecialRequests
                 };
+
                 await _repository.AddAsync(booking);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+
                 return booking;
             }
             catch
@@ -72,7 +75,7 @@ namespace guest_house_management_backend.Services.Bookings
             }
         }
 
-        public async Task<Booking> UpdateAsync(int id, UpdateBookingDto updateRequest)
+        public async Task<BookingResponseDto> UpdateAsync(int id, UpdateBookingDto updateRequest)
         {
             ValidateDates(updateRequest.CheckInDate, updateRequest.CheckOutDate);
 
@@ -80,19 +83,22 @@ namespace guest_house_management_backend.Services.Bookings
 
             try
             {
-                var booking = await _repository.GetByIdAsync(id);
+                var booking = await _repository.GetBookingWithDetailsAsync(id);
 
                 if (booking == null)
+                {
                     throw new KeyNotFoundException("Booking not found.");
+                }
 
-                var isAvailable = await _repository.IsRoomAvailableAsync(
-                    booking.RoomId,
-                    updateRequest.CheckInDate,
-                    updateRequest.CheckOutDate,
-                    id);
+                var availableRooms = await _availRoomRepository
+                    .GetAvailableRoomAsync(updateRequest.CheckInDate, updateRequest.CheckOutDate);
 
-                if (!isAvailable)
-                    throw new InvalidOperationException("Room not available for selected dates.");
+                var room = availableRooms.FirstOrDefault(r => r.Id == booking.RoomId);
+
+                if (room == null)
+                {
+                    throw new InvalidOperationException("Room not available for the selected dates.");
+                }
 
                 booking.CheckInDate = updateRequest.CheckInDate;
                 booking.CheckOutDate = updateRequest.CheckOutDate;
@@ -102,7 +108,19 @@ namespace guest_house_management_backend.Services.Bookings
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                return booking;
+                return new BookingResponseDto
+                {
+                    Id = booking.Id,
+                    GuestId = booking.GuestId,
+                    GuestName = booking.Guest.Name,
+                    RoomId = booking.RoomId,
+                    RoomNumber = booking.Room.RoomNumber,
+                    CheckInDate = booking.CheckInDate,
+                    CheckOutDate = booking.CheckOutDate,
+                    Status = booking.Status,
+                    price = booking.price,
+                    SpecialRequests = booking.SpecialRequests
+                };
             }
             catch
             {
@@ -113,13 +131,7 @@ namespace guest_house_management_backend.Services.Bookings
 
         public async Task DeleteAsync(int id)
         {
-            var booking = await _repository.GetByIdAsync(id);
-
-            if (booking == null)
-                throw new KeyNotFoundException("Booking not found.");
-
-            await _repository.DeleteAysnc(booking);
-            await _context.SaveChangesAsync();
+            await _repository.DeleteAysnc(id);
         }
 
         private void ValidateDates(DateTime checkIn, DateTime checkOut)
@@ -134,7 +146,7 @@ namespace guest_house_management_backend.Services.Bookings
             }
         }
 
-        private decimal CalculatePrice(Room room, DateTime checkIn, DateTime checkOut)
+        private decimal CalculatePrice(Models.Room room, DateTime checkIn, DateTime checkOut)
         {
             var days = (checkOut - checkIn).Days;
             return days * room.RoomType.PricePerNight;

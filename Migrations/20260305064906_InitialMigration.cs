@@ -60,20 +60,6 @@ namespace guest_house_management_backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "RoomStatus",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RoomStatus", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "RoomTypes",
                 columns: table => new
                 {
@@ -124,19 +110,13 @@ namespace guest_house_management_backend.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     RoomNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RoomTypeId = table.Column<int>(type: "int", nullable: false),
-                    RoomStatusId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RoomStatus = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Room", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Room_RoomStatus_RoomStatusId",
-                        column: x => x.RoomStatusId,
-                        principalTable: "RoomStatus",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Room_RoomTypes_RoomTypeId",
                         column: x => x.RoomTypeId,
@@ -202,8 +182,12 @@ namespace guest_house_management_backend.Migrations
                     GuestId = table.Column<int>(type: "int", nullable: false),
                     CheckInDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CheckOutDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ActualCheckInTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ActualCheckOutTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    FinalBillAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    IsPaymentCompleted = table.Column<bool>(type: "bit", nullable: false),
                     SpecialRequests = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
@@ -229,9 +213,9 @@ namespace guest_house_management_backend.Migrations
                 name: "Payment",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    BookingId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    BookingId1 = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    BookingId = table.Column<int>(type: "int", nullable: false),
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     PaymentMethod = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -242,8 +226,8 @@ namespace guest_house_management_backend.Migrations
                 {
                     table.PrimaryKey("PK_Payment", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Payment_Bookings_BookingId1",
-                        column: x => x.BookingId1,
+                        name: "FK_Payment_Bookings_BookingId",
+                        column: x => x.BookingId,
                         principalTable: "Bookings",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -326,14 +310,9 @@ namespace guest_house_management_backend.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Payment_BookingId1",
+                name: "IX_Payment_BookingId",
                 table: "Payment",
-                column: "BookingId1");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Room_RoomStatusId",
-                table: "Room",
-                column: "RoomStatusId");
+                column: "BookingId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Room_RoomTypeId",
@@ -385,9 +364,6 @@ namespace guest_house_management_backend.Migrations
 
             migrationBuilder.DropTable(
                 name: "Roles");
-
-            migrationBuilder.DropTable(
-                name: "RoomStatus");
 
             migrationBuilder.DropTable(
                 name: "RoomTypes");

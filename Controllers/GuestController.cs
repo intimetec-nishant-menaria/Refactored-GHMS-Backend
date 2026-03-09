@@ -30,7 +30,7 @@ namespace guest_house_management_backend.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<GuestResponseDto>>> Search(string search)
+        public async Task<ActionResult<IEnumerable<GuestResponseDto>>> Search([FromQuery] string search)
         {
             var guests = await _guestService.SearchGuestsAsync(search);
             return Ok(guests);

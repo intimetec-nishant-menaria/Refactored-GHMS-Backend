@@ -1,6 +1,7 @@
 ﻿using guest_house_management_backend.Data;
 using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Enums;
+using guest_house_management_backend.Models;
 using guest_house_management_backend.Repositories.BookingRepo;
 
 namespace guest_house_management_backend.Services.Bookings
@@ -35,14 +36,14 @@ namespace guest_house_management_backend.Services.Bookings
                     throw new Exception("Check-in date has not arrived!");
                 }
 
-                if (booking.Room.RoomStatus.Status != RoomStatusEnum.Available)
+                if (booking.Room.RoomStatus != RoomStatusEnum.Available)
                 {
                     throw new Exception("Room is not available!");
                 }
 
                 booking.Status = BookingStatusEnum.CheckedIn;
                 booking.ActualCheckInTime = DateTime.UtcNow;
-                booking.Room.RoomStatus.Status = RoomStatusEnum.Occupied;
+                booking.Room.RoomStatus = RoomStatusEnum.Occupied;
 
                 await _bookingRepository.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -54,7 +55,7 @@ namespace guest_house_management_backend.Services.Bookings
                     RoomNumber = booking.Room.RoomNumber,
                     ActualCheckInTime = booking.ActualCheckInTime.Value,
                     BookingStatus = booking.Status.ToString(),
-                    RoomStatus = booking.Room.RoomStatus.Status.ToString()
+                    RoomStatus = booking.Room.RoomStatus.ToString()
                 };
             }
             catch
@@ -95,7 +96,7 @@ namespace guest_house_management_backend.Services.Bookings
                 booking.FinalBillAmount = finalBill;
                 booking.IsPaymentCompleted = true;
 
-                booking.Room.RoomStatus.Status = RoomStatusEnum.Available;
+                booking.Room.RoomStatus = RoomStatusEnum.Available;
 
                 await _bookingRepository.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -110,7 +111,7 @@ namespace guest_house_management_backend.Services.Bookings
                     TotalNights = totalNights,
                     FinalBillAmount = finalBill,
                     BookingStatus = booking.Status.ToString(),
-                    RoomStatus = booking.Room.RoomStatus.Status.ToString()
+                    RoomStatus = booking.Room.RoomStatus.ToString()
                 };
             }
             catch

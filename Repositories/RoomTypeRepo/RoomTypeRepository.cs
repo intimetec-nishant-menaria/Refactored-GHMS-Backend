@@ -13,7 +13,7 @@ namespace guest_house_management_backend.Repositories.RoomTypeRepo
             _context = context;
         }
 
-        public async Task<List<RoomType>> GetAllAsync()
+        public async Task<List<RoomType>> GetAllRoomTypeAsync()
         {
             return await _context.RoomTypes
                 .Include(rt => rt.RoomTypeAmenities)
@@ -21,12 +21,35 @@ namespace guest_house_management_backend.Repositories.RoomTypeRepo
                 .ToListAsync();
         }
 
-        public async Task<RoomType?> GetByIdAsync(int id)
+        public async Task<RoomType?> GetRoomTypeByIdAsync(int id)
         {
             return await _context.RoomTypes
                 .Include(rt => rt.RoomTypeAmenities)
-                    .ThenInclude(rta => rta.Amenity) 
+                .ThenInclude(rta => rta.Amenity) 
                 .FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task DeleteRoomTypeAsync(int id)
+        {
+            var roomType = await _context.RoomTypes.FindAsync(id);
+
+            if (roomType == null)
+            {
+                return;
+            }
+            _context.RoomTypes.Remove(roomType);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AddRoomTypeAsync(RoomType roomType)
+        {
+            await _context.RoomTypes.AddAsync(roomType);
+            await _context.SaveChangesAsync();
+        }
+
+        public Task UpdateRoomTypeAsync(RoomType roomType)
+        {
+            throw new NotImplementedException();
         }
     }
 }

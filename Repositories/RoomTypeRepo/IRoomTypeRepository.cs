@@ -4,10 +4,10 @@ namespace guest_house_management_backend.Repositories.RoomTypeRepo
 {
     public interface IRoomTypeRepository
     {
-        Task<List<RoomType>> GetAllAsync();
-        Task<RoomType?> GetByIdAsync(int id);
-        //Task AddAsync(RoomType roomType);
-        //Task UpdateAsync(RoomType roomType);
-        //Task DeleteAsync(RoomType roomType);
+        Task<List<RoomType>> GetAllRoomTypeAsync();
+        Task<RoomType?> GetRoomTypeByIdAsync(int id);
+        Task AddRoomTypeAsync(RoomType roomType);
+        Task UpdateRoomTypeAsync(RoomType roomType);
+        Task DeleteRoomTypeAsync(int id);
     }
 }

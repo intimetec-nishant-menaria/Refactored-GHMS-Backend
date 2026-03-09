@@ -19,6 +19,5 @@ namespace guest_house_management_backend.Models
         public DateTime? UpdatedAt { get; set; }
         public ICollection<UserToken> Tokens { get; set; } = new List<UserToken>();
 
-
     }
 }

@@ -14,7 +14,7 @@ namespace guest_house_management_backend.Services.RoomType
 
         public async Task<List<RoomTypeResponseDto>> GetAllAsync()
         {
-            var roomTypes = await _repository.GetAllAsync();
+            var roomTypes = await _repository.GetAllRoomTypeAsync();
 
             return roomTypes.Select(rt => new RoomTypeResponseDto
             {
@@ -28,7 +28,7 @@ namespace guest_house_management_backend.Services.RoomType
 
         public async Task<RoomTypeResponseDto> GetByIdAsync(int id)
         {
-            var rt = await _repository.GetByIdAsync(id);
+            var rt = await _repository.GetRoomTypeByIdAsync(id);
 
             if (rt == null)
                 return null;

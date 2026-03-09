@@ -37,14 +37,14 @@ namespace guest_house_management_backend.Controllers
         //}
 
         //[HttpPut("{id}")]
-        //public async Task<IActionResult> Update(Guid id, CreateRoomTypeDto dto)
+        //public async Task<IActionResult> Update(int id, CreateRoomTypeDto dto)
         //{
         //    await _service.UpdateAsync(id, dto);
         //    return Ok("Room Type Updated Successfully");
         //}
 
         //[HttpDelete("{id}")]
-        //public async Task<IActionResult> Delete(Guid id)
+        //public async Task<IActionResult> Delete(int id)
         //{
         //    await _service.DeleteAsync(id);
         //    return Ok("Room Type Deleted Successfully");

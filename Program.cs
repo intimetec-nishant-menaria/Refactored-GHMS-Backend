@@ -1,9 +1,11 @@
 using guest_house_management_backend.Data;
+using guest_house_management_backend.Extensions;
 using guest_house_management_backend.Middleware;
 using guest_house_management_backend.Repositories.AvailableRoomRepo;
 using guest_house_management_backend.Repositories.BookingRepo;
 using guest_house_management_backend.Repositories.GuestRepo;
 using guest_house_management_backend.Repositories.RoleRepo;
+using guest_house_management_backend.Repositories.RoomRepo;
 using guest_house_management_backend.Repositories.RoomTypeRepo;
 using guest_house_management_backend.Repositories.UserRepo;
 using guest_house_management_backend.Repositories.UserTokenRepo;
@@ -12,13 +14,10 @@ using guest_house_management_backend.Services.AvailRoomService;
 using guest_house_management_backend.Services.Bookings;
 using guest_house_management_backend.Services.Email;
 using guest_house_management_backend.Services.Guest;
+using guest_house_management_backend.Services.Room;
 using guest_house_management_backend.Services.RoomType;
 using guest_house_management_backend.Services.UserManagement;
-
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,44 +36,24 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173")
+            policy.WithOrigins(builder.Configuration["Frontend:URL"]!)
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
         });
 });
-
-builder.Services.AddAuthentication(option =>
-{
-    option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    option.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-    .AddJwtBearer(option =>
-    {
-        option.SaveToken = true;
-        option.RequireHttpsMetadata = true;
-        option.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidAudience = builder.Configuration["JWT:ValidAudience"],
-            ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]!))
-        };
-    });
+builder.Services.AddJwtService(builder.Configuration);
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRoleRepository , RoleRepository>();
 builder.Services.AddScoped<IUserManagementService , UserManagementService>();
-
-builder.Services.AddScoped<IEmailSender , EmailSender>();
+builder.Services.AddTransient<IEmailSender , EmailSender>();
 builder.Services.AddScoped<IUserTokenRepository , UserTokenRepository>();
-
+builder.Services.AddScoped<IRoomRepository, RoomRepository>();
+builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
-
 builder.Services.AddScoped<IGuestRepository, GuestRepository>();
 builder.Services.AddScoped<IGuestService, GuestService>();
 
@@ -84,7 +63,6 @@ builder.Services.AddScoped<IBookingCheckInOutService, BookingCheckInOutService>(
 
 builder.Services.AddScoped<IAvailRoomRepository, AvailRoomRepostiory>();
 builder.Services.AddScoped<IAvailRoomService, AvailRoomService>();
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -93,7 +71,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseGlobalExceptionMiddleware();
+//app.UseGlobalExceptionMiddleware();
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 

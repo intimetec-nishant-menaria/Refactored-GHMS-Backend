@@ -4,5 +4,7 @@
     {
         Available = 1,
         Occupied = 2,
+        Maintenance =3,
+        OutOfOrder = 4
     }
 }

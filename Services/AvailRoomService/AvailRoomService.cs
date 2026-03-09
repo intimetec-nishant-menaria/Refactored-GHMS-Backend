@@ -19,43 +19,36 @@ namespace guest_house_management_backend.Services.AvailRoomService
         {
             if (request.CheckIn >= request.CheckOut)
             {
-                throw new Exception("Check-out must be after check-in.");
+                throw new InvalidOperationException("Check-out must be after check-in.");
             }
 
             if (request.CheckIn.Date < DateTime.UtcNow.Date)
             {
-                throw new Exception("Check-in cannot be in the past.");
+                throw new InvalidOperationException("Check-in cannot be in the past.");
             }
 
-            var normalizedCheckIn = request.CheckIn.Date.AddHours(14); 
-            var normalizedCheckOut = request.CheckOut.Date.AddHours(11); 
+            var normalizedCheckIn = request.CheckIn.Date.AddHours(14);
+            var normalizedCheckOut = request.CheckOut.Date.AddHours(11);
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            var rooms = await _roomRepository
+                .GetAvailableRoomAsync(normalizedCheckIn, normalizedCheckOut);
 
-            try
-            {
-                var rooms = await _roomRepository
-                    .GetAvailableRoomAsync(normalizedCheckIn, normalizedCheckOut);
+            var nights = (request.CheckOut.Date - request.CheckIn.Date).Days;
 
-                var nights = (request.CheckOut.Date - request.CheckIn.Date).Days;
-
-                var result = rooms.Select(r => new AvailableRoomDto
+            var result = rooms.Select(r =>
                 {
-                    RoomId = r.Id,
-                    RoomNumber = r.RoomNumber,
-                    PricePerNight = r.RoomType.PricePerNight,
-                    TotalPrice = nights * r.RoomType.PricePerNight
+                    var price = r.RoomType?.PricePerNight ?? 0;
+
+                    return new AvailableRoomDto
+                    {
+                        RoomId = r.Id,
+                        RoomNumber = r.RoomNumber,
+                        PricePerNight = price,
+                        TotalPrice = nights * price
+                    };
                 }).ToList();
 
-                await transaction.CommitAsync();
-
-                return result;
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+            return result;
         }
     }
 }

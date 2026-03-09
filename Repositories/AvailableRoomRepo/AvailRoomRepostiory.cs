@@ -22,6 +22,7 @@ namespace guest_house_management_backend.Repositories.AvailableRoomRepo
                  .Select(b => b.RoomId)
                  .ToListAsync();
             return await _context.Room
+                .Include(r => r.RoomType)
                 .Where(r => !bookedRoomIds.Contains(r.Id))
                 .AsNoTracking()
                 .ToListAsync();

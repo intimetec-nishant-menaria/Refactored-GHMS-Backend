@@ -7,6 +7,6 @@ namespace guest_house_management_backend.DTOs
         public RoomTypeEnum RoomTypeName { get; set; }
         public int Capacity { get; set; }
         public decimal PricePerNight { get; set; }
-        public List<Guid> AmenityIds { get; set; } = new();
+        public List<int> AmenityIds { get; set; } = new();
     }
 }
