@@ -55,5 +55,13 @@ namespace guest_house_management_backend.Repositories.GuestRepo
             _context.Guest.Remove(guest);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<List<Booking>> GetGuestBookings(int guestId)
+        {
+            return await _context.Bookings
+                .Where(b => b.GuestId == guestId)
+                .Include(b => b.Room)
+                .ToListAsync();
+        }
     }
 }
