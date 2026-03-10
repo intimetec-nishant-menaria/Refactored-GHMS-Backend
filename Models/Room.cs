@@ -13,6 +13,7 @@ namespace guest_house_management_backend.Models
         [Required]
         public int RoomTypeId { get; set; }
         public RoomType RoomType { get; set; } = null!;
+        public int FloorNumber { get; set; }
         public RoomStatusEnum RoomStatus { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }

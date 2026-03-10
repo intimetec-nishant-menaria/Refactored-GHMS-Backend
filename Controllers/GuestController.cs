@@ -68,5 +68,13 @@ namespace guest_house_management_backend.Controllers
                 message = "Guest deleted successfully."
             });
         }
+
+        [HttpGet("{guestId}/booking-history")]
+        public async Task<IActionResult> GetGuestBookingHistory(int guestId, [FromQuery] GuestBookingHistoryQueryDto queryDto)
+        {
+            var result = await _guestService
+                .GetGuestBookingHistoryAsync(guestId, queryDto);
+            return Ok(result);
+        }
     }
 }

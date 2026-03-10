@@ -8,6 +8,5 @@
         public DateTime CheckOut { get; set; }
         public decimal FinalAmount { get; set; }
         public string Status { get; set; } = string.Empty;
-
     }
 }

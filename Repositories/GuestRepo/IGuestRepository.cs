@@ -12,6 +12,5 @@ namespace guest_house_management_backend.Repositories.GuestRepo
         public Task UpdateAsync(Guest guest);
         public Task DeleteAsync(Guest guest);
         public Task<List<Booking>> GetGuestBookings(int guestId);
-        public Task SaveChanges();
     }
 }

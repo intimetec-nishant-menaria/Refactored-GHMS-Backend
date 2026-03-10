@@ -14,5 +14,6 @@ namespace guest_house_management_backend.Services.Guest
         public Task UpdateGuestAsync(int guestId, UpdateGuestDto updateRequest);
 
         public Task DeleteGuestAsync(int guestId);
+        public Task<GuestBookingHistoryResponseDto> GetGuestBookingHistoryAsync(int guestId, GuestBookingHistoryQueryDto queryDto);
     }
 }
