@@ -18,6 +18,7 @@ namespace guest_house_management_backend.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         public ICollection<UserToken> Tokens { get; set; } = new List<UserToken>();
+        public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 
     }
 }

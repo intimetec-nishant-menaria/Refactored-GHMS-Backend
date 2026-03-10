@@ -2,6 +2,7 @@
 using guest_house_management_backend.Models;
 using guest_house_management_backend.Repositories;
 using guest_house_management_backend.Repositories.RoomRepo;
+using guest_house_management_backend.Repositories.RoomTypeRepo;
 
 namespace guest_house_management_backend.Services.Room
 {

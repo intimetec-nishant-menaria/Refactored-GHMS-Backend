@@ -15,7 +15,6 @@ namespace guest_house_management_backend.Models
         public RoomType RoomType { get; set; } = null!;
 
         [Required]
-        public Guid RoomStatusId { get; set; }
         public Enums.RoomStatusEnum RoomStatus { get; set; }
         
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

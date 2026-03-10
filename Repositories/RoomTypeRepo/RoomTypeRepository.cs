@@ -1,8 +1,9 @@
 ﻿using guest_house_management_backend.Data;
+using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace guest_house_management_backend.Repositories
+namespace guest_house_management_backend.Repositories.RoomTypeRepo
 {
     public class RoomTypeRepository : IRoomTypeRepository
     {
@@ -50,6 +51,15 @@ namespace guest_house_management_backend.Repositories
         public Task UpdateRoomTypeAsync(RoomType roomType)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<IEnumerable<AmenitiesResponseDto>> GetAllAminities()
+        {
+            return await _context.Amenities.Select(a => new AmenitiesResponseDto
+            {
+                Id = a.Id,
+                Name = a.Name,
+            }).ToListAsync();
         }
     }
 }

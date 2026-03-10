@@ -15,6 +15,13 @@ namespace guest_house_management_backend.Controllers
             _service = service;
         }
 
+        [HttpGet("/amenities")]
+        public async Task<IActionResult> GetAllAmenites()
+        {
+            var res = await _service.GetAllAminities();
+            return Ok(res);
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {

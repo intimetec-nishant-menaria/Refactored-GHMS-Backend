@@ -30,7 +30,7 @@ namespace guest_house_management_backend.Controllers
 
             return Ok(new
             {
-                UserId =userId,
+                Id =userId,
                 Name = name,
                 Email = email,
                 Role = role,
@@ -49,7 +49,7 @@ namespace guest_house_management_backend.Controllers
                     return Unauthorized("Invalid Credentials");
                 var cookieOptions = new CookieOptions
                 {
-                    HttpOnly = true,
+                    HttpOnly = false,
                     Secure = true,
                     SameSite = SameSiteMode.None,
                     Expires = DateTime.UtcNow.AddDays(5),

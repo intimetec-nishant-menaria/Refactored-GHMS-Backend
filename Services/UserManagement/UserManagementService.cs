@@ -28,7 +28,7 @@ namespace guest_house_management_backend.Services.UserManagement
             User newUser = new User
             {
                 Name = userDto.Name,
-                Email = userDto.Email,
+                Email = userDto.Email.ToLower(),
                 HashPassword = BCrypt.Net.BCrypt.HashPassword(userDto.Password),
                 RoleId = roleId,
                 IsActive = userDto.IsActive,
@@ -41,7 +41,7 @@ namespace guest_house_management_backend.Services.UserManagement
         {
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
-                throw new KeyNotFoundException("User not found.");
+                throw new KeyNotFoundException("User not found.");  
 
             await _userRepository.DeleteAsync(id);
         }
@@ -67,7 +67,7 @@ namespace guest_house_management_backend.Services.UserManagement
             int roleId = await _roleRepository.GetRoleIdByNameAsync(dto.Role);
 
             user.Name = dto.Name;
-            user.Email = dto.Email;
+            user.Email = dto.Email.ToLower();
             user.RoleId = roleId;
             user.IsActive = dto.IsActive;
             user.UpdatedAt = DateTime.UtcNow;

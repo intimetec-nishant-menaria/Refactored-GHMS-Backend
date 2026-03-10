@@ -1,6 +1,5 @@
 ﻿using guest_house_management_backend.DTOs;
-using guest_house_management_backend.Models;
-using guest_house_management_backend.Repositories;
+using guest_house_management_backend.Repositories.RoomTypeRepo;
 
 namespace guest_house_management_backend.Services.RoomType
 {
@@ -44,6 +43,11 @@ namespace guest_house_management_backend.Services.RoomType
                     .Select(a => a.Amenity!.Name)
                     .ToList()
             };
+        }
+
+        public async Task<IEnumerable<AmenitiesResponseDto>> GetAllAminities()
+        {
+            return await _repository.GetAllAminities();
         }
     }
 }

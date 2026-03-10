@@ -38,7 +38,7 @@ namespace guest_house_management_backend.Services.Auth
             User newUser = new User
             {
                 Name = registerRequest.FullName,
-                Email = registerRequest.Email,
+                Email = registerRequest.Email.ToLower(),
                 HashPassword = BCrypt.Net.BCrypt.HashPassword(registerRequest.Password),
                 RoleId = roleId,
             };
@@ -47,7 +47,7 @@ namespace guest_house_management_backend.Services.Auth
 
         public async Task<(string? token , User user)> LoginUserAsync(LoginDto loginRequest)
         {
-            var user = await _userRepository.GetUserByEmailAsync(loginRequest.Email);
+            var user = await _userRepository.GetUserByEmailAsync(loginRequest.Email.ToLower());
 
             if (user == null)
             {

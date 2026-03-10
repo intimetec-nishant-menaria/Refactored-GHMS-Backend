@@ -6,5 +6,6 @@ namespace guest_house_management_backend.Services.RoomType
     {
         Task<List<RoomTypeResponseDto>> GetAllAsync();
         Task<RoomTypeResponseDto> GetByIdAsync(int id);
+        Task<IEnumerable<AmenitiesResponseDto>> GetAllAminities();
     }
 }
