@@ -10,7 +10,6 @@ namespace guest_house_management_backend.Data
         public DbSet<Role> Roles { get; set; }
         public DbSet<Room> Rooms { get; set; }
         public DbSet<UserToken> UserTokens { get; set; }
-        //public DbSet<Room> Room { get; set; }
         public DbSet<RoomType> RoomTypes { get; set; }
         public DbSet<RoomAmenity> Amenities { get; set; }
         public DbSet<RoomTypeAmenity> RoomTypeAmenities { get; set; }

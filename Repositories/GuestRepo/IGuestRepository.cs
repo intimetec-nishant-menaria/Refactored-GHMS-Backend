@@ -6,10 +6,12 @@ namespace guest_house_management_backend.Repositories.GuestRepo
     {
         public Task<List<Guest>> GetAllAsync();
         public Task<Guest?> GetByIdAsync(int guestId);
+        public Task<Guest?> GetByEmailAsync(string email);
         public Task<List<Guest>> SearchAsync(string search);
         public Task<bool> IsDuplicateAsync(string email, string contact);
         public Task AddAsync(Guest guest);
         public Task UpdateAsync(Guest guest);
         public Task DeleteAsync(Guest guest);
+        public Task<List<Booking>> GetGuestBookings(int guestId);
     }
 }

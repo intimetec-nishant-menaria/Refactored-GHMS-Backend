@@ -16,7 +16,7 @@ namespace guest_house_management_backend.Controllers
             _userManagementService = userManagementService;
         }
 
-        [HttpPost]
+        [HttpPost("createUser")]
         public async Task<IActionResult> CreateUser(CreateUserDto createUserDto)
         {
             try
@@ -38,7 +38,7 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet("getAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {
             try
@@ -52,7 +52,7 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("getUserById/{id}")]
         public async Task<IActionResult> GetUserById(int id)
         {
             try
@@ -70,7 +70,7 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}/deleteUser")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             try
@@ -88,7 +88,7 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id}/updateUser")]
         public async Task<IActionResult> UpdateUser(int id, UpdateUserDto updateUserDto)
         {
             try

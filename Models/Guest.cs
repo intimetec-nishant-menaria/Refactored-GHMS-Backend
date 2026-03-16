@@ -11,14 +11,14 @@ namespace guest_house_management_backend.Models
         public string Name { get; set; } = string.Empty;
         [Required]
         [Phone]
-        public string Contact { get; set; } = string.Empty;
+        public string? Contact { get; set; } = string.Empty;
         [Required]
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
         [Required]
-        public string IDProof { get; set; } = string.Empty;
+        public string? IDProof { get; set; } = string.Empty;
         [Required]
-        public string Address { get; set; } = string.Empty;
+        public string? Address { get; set; } = string.Empty;
         [Required]
         [Phone]
         public string EmergencyContact { get; set; } = string.Empty;

@@ -1,7 +1,7 @@
 ﻿using guest_house_management_backend.Data;
-using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Enums;
 using guest_house_management_backend.Models;
+using guest_house_management_backend.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace guest_house_management_backend.Repositories.BookingRepo
@@ -13,6 +13,81 @@ namespace guest_house_management_backend.Repositories.BookingRepo
         public BookingRepository(DBContext context)
         {
             _context = context;
+        }
+        public async Task<List<BookingResponseDto>> GetAllAsync()
+        {
+            return await _context.Bookings
+            .Include(b => b.Guest)
+            .Include(b => b.Room)
+            .Select(b => new BookingResponseDto
+            {
+                Id = b.Id,
+                GuestId = b.GuestId,
+                GuestName = b.Guest.Name,
+                GuestEmail = b.Guest.Email,
+                RoomId = b.RoomId,
+                RoomNumber = b.Room.RoomNumber,
+                CheckInDate = b.CheckInDate,
+                CheckOutDate = b.CheckOutDate,
+                Status = b.Status,
+                price = b.price,
+                SpecialRequests = b.SpecialRequests
+            })
+            .ToListAsync();
+        }
+        public async Task<BookingResponseDto?> GetByIdAsync(int id)
+        {
+            return await _context.Bookings
+                .Include(b => b.Guest)
+                .Include(b => b.Room)
+                .Where(b => b.Id == id)
+                .Select(b => new BookingResponseDto
+                {
+                    Id = b.Id,
+                    GuestId = b.GuestId,
+                    GuestName = b.Guest.Name,
+                    RoomId = b.RoomId,
+                    RoomNumber = b.Room.RoomNumber,
+                    CheckInDate = b.CheckInDate,
+                    CheckOutDate = b.CheckOutDate,
+                    Status = b.Status,
+                    price = b.price,
+                    SpecialRequests = b.SpecialRequests
+
+                })
+                .FirstOrDefaultAsync(b => b.Id == id);
+        }
+        public async Task AddAsync(Booking booking)
+        {
+            await _context.Bookings.AddAsync(booking);
+        }
+        public async Task UpdateAsync(Booking booking)
+        {
+            _context.Bookings.Update(booking);
+            await _context.SaveChangesAsync();
+        }
+        public async Task DeleteAysnc(int id)
+        {
+            var booking = await _context.Bookings.FindAsync(id);
+            if(booking == null)
+            {
+                return;
+            }
+            _context.Bookings.Remove(booking);
+            await SaveChangesAsync();
+        }
+
+        public async Task<Booking?> GetBookingWithDetailsAsync(int bookingId)
+        {
+            return await _context.Bookings.
+                    Include(b=>b.Room).
+                    ThenInclude(r=>r.RoomType).
+                    Include(b => b.Guest).FirstOrDefaultAsync(b=>b.Id == bookingId);
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<RoomResponseDto>> GetAvailableRooms(RoomAvaiblityRequestDto roomAvaiblityRequest)
@@ -38,42 +113,10 @@ namespace guest_house_management_backend.Repositories.BookingRepo
                     RoomStatus =room.RoomStatus
                 }).ToListAsync();
         }
-        public async Task<IEnumerable<BookingResponseDto>> GetAllAsync()
-        {
-            return await _context.Bookings
-                .Include(b => b.User)
-                .Include(b => b.Room)
-                .Select(b=>new BookingResponseDto
-                {
-                    BookingId = b.Id,
-                    UserId = b.User.Id,
-                    UserEmail = b.User.Email,
-                    RoomId = b.RoomId,
-                    RoomNumber  =   b.Room.RoomNumber,
-                    CheckInDate = b.CheckInDate,
-                    CheckOutDate = b.CheckOutDate,
-                    Status = b.Status,
-                })
-                .ToListAsync();
-        }
-        public async Task<Booking?> GetByIdAsync(int id)
-        {
-            return await _context.Bookings
-                .Include(b => b.User)
-                .Include(b => b.Room)
-                .FirstOrDefaultAsync(b => b.Id == id);
-        }
-        public async Task AddAsync(Booking booking)
-        {
-            await _context.Bookings.AddAsync(booking);
-        }
-        public async Task UpdateAsync(Booking booking)
+        public async Task UpdateBookingAsync(Booking booking)
         {
              _context.Bookings.Update(booking);
-        }
-        public async Task DeleteAysnc(Booking booking)
-        {
-            _context.Bookings.Remove(booking);
+            await _context.SaveChangesAsync();
         }
         public async Task<bool> IsRoomAvailableAsync(
             int roomId,
@@ -94,14 +137,14 @@ namespace guest_house_management_backend.Repositories.BookingRepo
 
         public async Task<IEnumerable<CalendarEventResponceDto>> fetchByRange(DateTime start ,DateTime end)
         {
-            var res= await _context.Bookings.Where(
+            var res= await _context.Bookings.Include(b=>b.Guest).Where(
                 b =>
                     b.CheckInDate < end &&
                     b.CheckOutDate > start
             ).Select( b=> new CalendarEventResponceDto
             {
                 BookingId = b.Id,
-                UserName = b.User.Name,
+                UserName = b.Guest.Name,
                 RoomNumber = b.Room.RoomNumber,
                 Start = b.CheckInDate,
                 End = b.CheckOutDate,
@@ -109,6 +152,14 @@ namespace guest_house_management_backend.Repositories.BookingRepo
             }).ToListAsync();
 
             return res;
+        }
+
+        public async Task<Booking?> getBookingById(int id)
+        {
+            return await _context.Bookings
+                .Include(b => b.Room)
+                .Include(b => b.Guest)
+                .FirstOrDefaultAsync(b => b.Id == id);
         }
     }
 }

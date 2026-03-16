@@ -5,46 +5,89 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace guest_house_management_backend.Controllers
 {
-    //[Authorize]
     [Route("api/booking")]
     [ApiController]
-    public class BookingController : ControllerBase
+    public class BookingController : Controller
     {
         private readonly IBookingService _service;
-
-        public BookingController(IBookingService service)
+        private readonly IBookingCheckInOutService _bookingService;
+        public BookingController(IBookingService service, IBookingCheckInOutService bookingService)
         {
             _service = service;
-        }
-
-        [HttpPost("available")]
-        public async Task<IActionResult> GetAllAvailableRooms(RoomAvaiblityRequestDto roomAvaiblityRequest)
-        {
-            var res = await _service.GetAllAvailableRooms(roomAvaiblityRequest);
-            return Ok(res);
+            _bookingService = bookingService;
         }
 
 
-        [HttpGet]
+        [Authorize(Roles = "Admin,Staff")]
+        [HttpGet("getAllBookings")]
         public async Task<IActionResult> GetAll()
         {
             return Ok(await _service.GetAllAsync());
         }
 
-        [HttpGet("range")]
+
+        [Authorize(Roles = "Admin,Staff")]
+        [HttpGet("getBookingById/{id}")]
+        public async Task<IActionResult> GetByIdAsync(int id)
+        {
+            return Ok(await _service.GetByIdAsync(id));
+        }
+
+
+        [Authorize(Roles = "Admin,Staff")]
+        [HttpPut("updateBooking/{id}")]
+        public async Task<IActionResult> Update(int id, UpdateBookingDto updateRequest)
+        {
+            await _service.UpdateAsync(id, updateRequest);
+
+            return Ok(new
+            {
+                message = "Booking updated successfully."
+            });
+        }
+
+        [Authorize(Roles = "Admin,Staff")]
+        [HttpDelete("deleteBooking/{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _service.DeleteAsync(id);
+
+            return Ok(new
+            {
+                message = "Booking deleted successfully."
+            });
+        }
+
+
+        [Authorize(Roles = "Admin,Staff")]
+        [HttpPost("checkIn/{bookingId}")]
+        public async Task<IActionResult> CheckIn(int bookingId)
+        {
+            var checkIn = await _bookingService.CheckInAsync(bookingId);
+            return Ok(checkIn);
+        }
+
+
+        [Authorize(Roles = "Admin,Staff")]
+        [HttpPost("checkOut/{bookingId}")]
+        public async Task<IActionResult> CheckOut(int bookingId)
+        {
+            var checkOut = await _bookingService.CheckOutAsync(bookingId);
+            return Ok(checkOut);
+        }
+
+
+        [Authorize(Roles = "Admin,Staff")]
+        [HttpGet("getBookingsByRange")]
         public async Task<IActionResult> fetchBookingsByRange([FromQuery] DateTime start, [FromQuery] DateTime end)
         {
             var res = await _service.GetBookingsByRange(start, end);
             return Ok(res);
         }
 
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetByIdAsync(int id)
-        {
-            return Ok(await _service.GetByIdAsync(id));
-        }
 
-        [HttpPost]
+        [Authorize]
+        [HttpPost("createBooking")]
         public async Task<IActionResult> CreateBooking([FromBody] CreateBookingDto createRequest)
         {
             if (!ModelState.IsValid)
@@ -73,29 +116,9 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, UpdateBookingDto updateRequest)
-        {
-            await _service.UpdateAsync(id, updateRequest);
 
-            return Ok(new
-            {
-                message = "Booking updated successfully."
-            });
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            await _service.DeleteAsync(id);
-
-            return Ok(new
-            {
-                message = "Booking deleted successfully."
-            });
-        }
-
-        [HttpPost("cancel/{id}")]
+        [Authorize]
+        [HttpPost("{id}/cancelBooking")]
         public async Task<IActionResult> CancelBooking(int id)
         {
             try
@@ -110,7 +133,7 @@ namespace guest_house_management_backend.Controllers
             {
                 return BadRequest(new
                 {
-                    message = "something went wrong"
+                    message = error.Message
                 });
             }
         }

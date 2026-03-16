@@ -5,10 +5,10 @@ namespace guest_house_management_backend.Models
 {
     public class Payment
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
 
         [Required]
-        public Guid BookingId { get; set; }
+        public int BookingId { get; set; }
         public Booking Booking { get; set; } = null!;
 
         [Required]

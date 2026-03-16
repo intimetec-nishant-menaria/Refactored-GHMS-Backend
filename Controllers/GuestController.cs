@@ -1,11 +1,13 @@
 ﻿using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Services.Guest;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace guest_house_management_backend.Controllers
 {
     [Route("api/guest")]
     [ApiController]
+    [Authorize(Roles = "Admin,Staff")]
     public class GuestController : ControllerBase
     {
         public readonly IGuestService _guestService;
@@ -15,28 +17,28 @@ namespace guest_house_management_backend.Controllers
             _guestService = guestService;
         }
 
-        [HttpGet]
+        [HttpGet("getAllGuests")]
         public async Task<IActionResult> GetAllGuests()
         {
             var guest =  await _guestService.GetAllGuestsAsync();
             return Ok(guest);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("getGuestById/{id}")]
         public async Task<ActionResult<GuestResponseDto>> GetById(int id)
         {
             var guest = await _guestService.GetGuestByIdAsync(id);
             return Ok(guest);
         }
 
-        [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<GuestResponseDto>>> Search(string search)
+        [HttpGet("searchGuests")]
+        public async Task<ActionResult<IEnumerable<GuestResponseDto>>> Search([FromQuery] string search)
         {
             var guests = await _guestService.SearchGuestsAsync(search);
             return Ok(guests);
         }
 
-        [HttpPost]
+        [HttpPost("createGuest")]
         public async Task<IActionResult> Create( CreateGuestDto createRequest)
         {
             await _guestService.CreateGuestAsync(createRequest);
@@ -47,7 +49,7 @@ namespace guest_house_management_backend.Controllers
             });
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id}/updateGuest")]
         public async Task<IActionResult> Update(int id, UpdateGuestDto updateRequest)
         {
             await _guestService.UpdateGuestAsync(id, updateRequest);
@@ -58,7 +60,7 @@ namespace guest_house_management_backend.Controllers
             });
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}/deleteGuest")]
         public async Task<IActionResult> Delete(int id)
         {
             await _guestService.DeleteGuestAsync(id);
@@ -67,6 +69,14 @@ namespace guest_house_management_backend.Controllers
             {
                 message = "Guest deleted successfully."
             });
+        }
+
+        [HttpGet("booking-history/{guestId}")]
+        public async Task<IActionResult> GetGuestBookingHistory(int guestId, [FromQuery] GuestBookingHistoryQueryDto queryDto)
+        {
+            var result = await _guestService
+                .GetGuestBookingHistoryAsync(guestId, queryDto);
+            return Ok(result);
         }
     }
 }

@@ -19,7 +19,7 @@ namespace guest_house_management_backend.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("me")]
+        [Route("getUserDetails")]
         public IActionResult GetMe()
         {
             var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

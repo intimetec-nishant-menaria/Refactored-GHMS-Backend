@@ -1,11 +1,13 @@
 ﻿using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Services.Room;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace guest_house_management_backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Admin")]
     public class RoomsController : ControllerBase
     {
         private readonly IRoomService _roomService;
@@ -15,7 +17,7 @@ namespace guest_house_management_backend.Controllers
             _roomService = roomService;
         }
 
-        [HttpPut("{id}/status")]
+        [HttpPut("updateRoomStatus/{id}")]
         public async Task<IActionResult> UpdateRoomStatus(int id, UpdateRoomStatusDto UpdateRequest)
         {
             try
@@ -36,7 +38,7 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
-        [HttpGet("{id}/status")]
+        [HttpGet("getRoomStatus/{id}")]
         public async Task<IActionResult> GetRoomStatus(int id)
         {
             try
@@ -76,7 +78,7 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("deleteRoom/{id}")]
         public async Task<IActionResult> DeleteRoomAsync(int id) 
         {
             try
@@ -98,7 +100,7 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("updateRoom/{id}")]
         public async Task<IActionResult> UpdateRoomAsync(int id,UpdateRoomDto updateRoomRequest)
         {
             try
@@ -122,7 +124,7 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("createRoom")]
         public async Task<IActionResult> CreateRoomAsync(CreateRoomDto createRoomRequest)
         {
             try
@@ -139,7 +141,7 @@ namespace guest_house_management_backend.Controllers
                 });
             }
         }
-        [HttpGet]
+        [HttpGet("getAllRooms")]
         public async Task<IActionResult> GetAllRoomsAsync()
         {
             try

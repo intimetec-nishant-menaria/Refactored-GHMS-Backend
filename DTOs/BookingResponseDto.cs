@@ -4,14 +4,16 @@ namespace guest_house_management_backend.DTOs
 {
     public class BookingResponseDto
     {
-        public int BookingId { get; set; }
+        public int Id { get; set; }
+        public int GuestId { get; set; }
+        public string GuestName { get; set; } = string.Empty;
+        public string GuestEmail { get; set; } = string.Empty;
         public int RoomId { get; set; }
-        public string RoomNumber { get; set; }
-        public int UserId { get; set; }
-        public string UserEmail { get; set; }
+        public string RoomNumber { get; set; } = string.Empty;
         public DateTime CheckInDate { get; set; }
         public DateTime CheckOutDate { get; set; }
         public BookingStatusEnum Status { get; set; }
+        public decimal? price { get; set; }
         public string? SpecialRequests { get; set; }
     }
 }

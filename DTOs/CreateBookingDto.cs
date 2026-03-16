@@ -7,7 +7,8 @@ namespace guest_house_management_backend.DTOs
     public class CreateBookingDto
     {
         public int RoomId { get; set; }
-        public int UserId { get; set; }
+        public int GuestId { get; set; }
+        public string GuestEmail { get; set; }
         public DateTime CheckInDate { get; set; }
         public DateTime CheckOutDate { get; set; }
         public string? SpecialRequests { get; set; }

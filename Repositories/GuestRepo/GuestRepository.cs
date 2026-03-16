@@ -22,12 +22,16 @@ namespace guest_house_management_backend.Repositories.GuestRepo
             return await _context.Guest.FindAsync(guestId);
         }
 
+        public async Task<Guest?> GetByEmailAsync(string email)
+        {
+            return await _context.Guest.FirstOrDefaultAsync(g => g.Email == email);
+        }
+
         public async Task<List<Guest>> SearchAsync(string search)
         {
             return await _context.Guest
                 .Where(g => g.Name.Contains(search)
-                         || g.Email.Contains(search)
-                         || g.Contact.Contains(search))
+                         || g.Email.Contains(search))
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -54,6 +58,14 @@ namespace guest_house_management_backend.Repositories.GuestRepo
         {
             _context.Guest.Remove(guest);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<Booking>> GetGuestBookings(int guestId)
+        {
+            return await _context.Bookings
+                .Where(b => b.GuestId == guestId)
+                .Include(b => b.Room)
+                .ToListAsync();
         }
     }
 }

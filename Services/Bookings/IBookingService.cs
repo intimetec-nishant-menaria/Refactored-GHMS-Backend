@@ -7,9 +7,9 @@ namespace guest_house_management_backend.Services.Bookings
     {
         Task<IEnumerable<RoomResponseDto>> GetAllAvailableRooms(RoomAvaiblityRequestDto roomAvaiblityRequest);
         Task <IEnumerable<BookingResponseDto>> GetAllAsync();
-        Task<guest_house_management_backend.Models.Booking?> GetByIdAsync(int id);
+        Task<BookingResponseDto> GetByIdAsync(int id);
         Task CreateAsync(CreateBookingDto dto);
-        Task<guest_house_management_backend.Models.Booking> UpdateAsync(int id, UpdateBookingDto dto);
+        Task<BookingResponseDto> UpdateAsync(int id, UpdateBookingDto dto);
         Task DeleteAsync(int id);
         Task CancelBooking(int id);
         Task<IEnumerable<CalendarEventResponceDto>> GetBookingsByRange(DateTime start , DateTime end);

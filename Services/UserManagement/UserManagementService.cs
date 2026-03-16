@@ -2,6 +2,7 @@
 using guest_house_management_backend.Models;
 using guest_house_management_backend.Repositories.RoleRepo;
 using guest_house_management_backend.Repositories.UserRepo;
+using MimeKit.Encodings;
 
 namespace guest_house_management_backend.Services.UserManagement
 {
@@ -65,6 +66,10 @@ namespace guest_house_management_backend.Services.UserManagement
             if (user == null) throw new KeyNotFoundException("User not found");
 
             int roleId = await _roleRepository.GetRoleIdByNameAsync(dto.Role);
+
+            var userWithUpdateEmail = await _userRepository.GetUserByEmailAsync(dto.Email);
+            if(userWithUpdateEmail != null && userWithUpdateEmail.Id !=id   )
+                throw new InvalidOperationException("User with this email already exists.");
 
             user.Name = dto.Name;
             user.Email = dto.Email.ToLower();
