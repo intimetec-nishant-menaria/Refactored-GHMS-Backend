@@ -1,0 +1,10 @@
+﻿namespace guest_house_management_backend.Repositories.UnitOfWorkRepo
+{
+    public interface IUnitOfWork
+    {
+        Task BeginTransactionAsync();
+        Task CommitAsync();
+        Task RollbackAsync();
+        Task SaveChangesAsync();
+    }
+}

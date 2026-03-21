@@ -60,7 +60,7 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
-        [HttpGet("status-summary")]
+        [HttpGet("getSummary")]
         public async Task<IActionResult> GetStatusSummary()
         {
             try
@@ -118,8 +118,7 @@ namespace guest_house_management_backend.Controllers
             {
                 return StatusCode(500, new
                 {
-                    message = "Internal Server Error",
-                    error = ex.Message
+                    message = ex.Message,
                 });
             }
         }
@@ -136,24 +135,22 @@ namespace guest_house_management_backend.Controllers
             {
                 return StatusCode(500, new
                 {
-                    message = "Internal server error",
-                    error = ex.Message
+                    message = ex.Message,
                 });
             }
         }
         [HttpGet("getAllRooms")]
-        public async Task<IActionResult> GetAllRoomsAsync()
+        public async Task<IActionResult> GetAllRoomsAsync([FromQuery] int pageNumber , [FromQuery] int pageSize , [FromQuery] int roomStatus , [FromQuery] int roomType)
         {
             try
             {
-                var rooms = await _roomService.getAllRoomAsync();
+                var rooms = await _roomService.getAllRoomAsync(pageNumber , pageSize , roomStatus , roomType);
                 return Ok(rooms);
             }catch(Exception ex)
             {
                 return StatusCode(500,new 
                 {
-                    message = "Internal server error",
-                    error = ex.Message 
+                    message = ex.Message,
                 });
             }
         }

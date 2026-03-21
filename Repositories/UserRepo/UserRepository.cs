@@ -1,5 +1,7 @@
-﻿using guest_house_management_backend.Data;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using guest_house_management_backend.DTOs;
+using guest_house_management_backend.DTOs.Paging;
 using guest_house_management_backend.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,10 +10,12 @@ namespace guest_house_management_backend.Repositories.UserRepo
     public class UserRepository : IUserRepository
     {
         private readonly Data.DBContext _context;
+        private readonly IMapper _mapper;
 
-        public UserRepository(Data.DBContext context)
+        public UserRepository(Data.DBContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
         public async Task<User?> GetUserByEmailAsync(string email)
         {
@@ -29,20 +33,30 @@ namespace guest_house_management_backend.Repositories.UserRepo
             return await _context.Users.FindAsync(id);
         }
 
-        public async Task<IEnumerable<UserResponseDto>> GetAllAsync()
+        public async Task<Paging<UserResponseDto>> GetAllAsync(int pageNumber , int pageSize , string searchUser)
         {
-            return await _context.Users
-             .Select(u => new UserResponseDto
-             {
-                 Id = u.Id,
-                 Name = u.Name,
-                 Email = u.Email,
-                 Role = u.Role.RoleName,
-                 IsActive = u.IsActive,
-                 IsEmailConfirmed = u.IsEmailConfirmed,
-                 CreatedAt = u.CreatedAt
-             })
-             .ToListAsync();
+            var query = _context.Users.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchUser))
+            {
+                query = query.Where(u => u.Email.Contains(searchUser));
+            }
+
+            var totalCount = await query.CountAsync();
+            var res = await query.Skip((pageNumber-1)*pageSize).Take(pageSize)
+                .ProjectTo<UserResponseDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+
+            return new Paging<UserResponseDto>
+            {
+                Data = res,
+                MetaData =
+                {
+                  TotalCount = totalCount,
+                  PageSize = pageSize,
+                  CurrentPage = pageNumber
+                }
+            };
         }
 
         public async Task DeleteAsync(int id)

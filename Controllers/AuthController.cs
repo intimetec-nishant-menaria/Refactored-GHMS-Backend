@@ -56,18 +56,9 @@ namespace guest_house_management_backend.Controllers
                     Path = "/"
                 };
                 Response.Cookies.Append("jwtToken", res.token, cookieOptions);
-                var resUser = new UserResponseDto
-                {
-                    Id = res.user.Id,
-                    Name = res.user.Name,
-                    Email = res.user.Email,
-                    Role = (RoleEnum)res.user.RoleId,
-                    IsActive = res.user.IsActive
-                };
                 return Ok(new
                 {
                     message = "Login successful",
-                    user = resUser,
                 });
             }
             catch(UnauthorizedAccessException ex)
@@ -188,11 +179,11 @@ namespace guest_house_management_backend.Controllers
 
         [HttpPost]
         [Route("resetPassword")]
-        public async Task<IActionResult> ResetPassword(ResetPasswordDto resetPasswordRequest)
+        public async Task<IActionResult> ResetPassword([FromQuery] string email, [FromQuery] string token,ResetPasswordDto resetPasswordRequest)
         {
             try
             {
-                await _authService.ResetPasswordAsync(resetPasswordRequest);
+                await _authService.ResetPasswordAsync(email , token ,resetPasswordRequest);
                 return Ok(new { message = "Password reset successful." });
             }
             catch (KeyNotFoundException ex)

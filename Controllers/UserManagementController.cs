@@ -1,4 +1,5 @@
 ﻿using guest_house_management_backend.DTOs;
+using guest_house_management_backend.DTOs.Paging;
 using guest_house_management_backend.Services.UserManagement;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -39,12 +40,12 @@ namespace guest_house_management_backend.Controllers
         }
 
         [HttpGet("getAllUsers")]
-        public async Task<IActionResult> GetAllUsers()
+        public async Task<ActionResult<Paging<UserResponseDto>>> GetAllUsers([FromQuery] int pageNumber , [FromQuery] int pageSize , [FromQuery] string? searchUser)
         {
             try
             {
-                var users = await _userManagementService.GetAllUsersAsync();
-                return Ok(users);
+                var users = await _userManagementService.GetAllUsersAsync(pageNumber , pageSize , searchUser);
+                return users;
             }
             catch (Exception)
             {

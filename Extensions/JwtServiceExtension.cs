@@ -22,8 +22,8 @@ namespace guest_house_management_backend.Extensions
                     option.RequireHttpsMetadata = false;
                     option.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
                     {
-                        ValidateIssuer = false,
-                        ValidateAudience = false,
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
                         ValidateLifetime = false,          
                         ValidateIssuerSigningKey = true,
                         ValidAudience = configuration["JWT:ValidAudience"],

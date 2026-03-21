@@ -133,7 +133,7 @@ namespace guest_house_management_backend.Services.Auth
             await _userTokenRepository.SaveChangesAsync();
 
             var resetLink =
-                $"http://localhost:5173/reset-password?email={user.Email}&token={token}";
+                $"https://localhost:5173/reset-password?email={user.Email}&token={token}";
 
             await _emailSender.SendEmailASync(
                 user.Email,
@@ -163,16 +163,16 @@ namespace guest_house_management_backend.Services.Auth
             if (tokenEntity == null)
                 throw new UnauthorizedAccessException("Invalid or expired token.");
         }
-        public async Task ResetPasswordAsync(ResetPasswordDto resetPasswordRequest)
+        public async Task ResetPasswordAsync(string email , string token ,ResetPasswordDto resetPasswordRequest)
         {
-            var user = await _userRepository.GetUserByEmailAsync(resetPasswordRequest.Email);
+            var user = await _userRepository.GetUserByEmailAsync(email);
 
             if (user == null)
                 throw new KeyNotFoundException("No user found with this email.");
 
             var tokenEntity = await _userTokenRepository.GetValidTokenAsync(
                 user.Id,
-                resetPasswordRequest.Token,
+                token,
                 UserTokenEnum.ResetPassword
             );
 

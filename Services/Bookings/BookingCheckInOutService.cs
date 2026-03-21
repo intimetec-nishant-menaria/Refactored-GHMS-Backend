@@ -1,7 +1,6 @@
 ﻿using guest_house_management_backend.Data;
 using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Enums;
-using guest_house_management_backend.Models;
 using guest_house_management_backend.Repositories.BookingRepo;
 
 namespace guest_house_management_backend.Services.Bookings
@@ -29,12 +28,7 @@ namespace guest_house_management_backend.Services.Bookings
                 if (booking.Status != BookingStatusEnum.Booked)
                 {
                     throw new Exception("Only booked reservations can be checked in!");
-                }
-
-                if (DateTime.UtcNow.Date < booking.CheckInDate.Date)
-                {
-                    throw new Exception("Check-in date has not arrived!");
-                }
+                }   
 
                 if (booking.Room.RoomStatus != RoomStatusEnum.Available)
                 {
@@ -42,7 +36,7 @@ namespace guest_house_management_backend.Services.Bookings
                 }
 
                 booking.Status = BookingStatusEnum.CheckedIn;
-                booking.ActualCheckInTime = DateTime.UtcNow;
+                booking.CheckInTime = DateTime.UtcNow;
                 booking.Room.RoomStatus = RoomStatusEnum.Occupied;
 
                 await _bookingRepository.SaveChangesAsync();
@@ -53,7 +47,7 @@ namespace guest_house_management_backend.Services.Bookings
                     BookingId = booking.Id,
                     GuestName = booking.Guest.Name,
                     RoomNumber = booking.Room.RoomNumber,
-                    ActualCheckInTime = booking.ActualCheckInTime.Value,
+                    ActualCheckInTime = booking.CheckInTime.Value,
                     BookingStatus = booking.Status.ToString(),
                     RoomStatus = booking.Room.RoomStatus.ToString()
                 };
@@ -83,7 +77,7 @@ namespace guest_house_management_backend.Services.Bookings
 
                 var actualCheckOutTime = DateTime.UtcNow;
 
-                var totalNights = (actualCheckOutTime.Date - booking.ActualCheckInTime!.Value.Date).Days;
+                var totalNights = (actualCheckOutTime.Date - booking.CheckInTime!.Value.Date).Days;
                 if (totalNights <= 0)
                 {
                     totalNights = 1;
@@ -92,7 +86,7 @@ namespace guest_house_management_backend.Services.Bookings
                 var finalBill = totalNights * booking.Room.RoomType.PricePerNight;
 
                 booking.Status = BookingStatusEnum.Completed;
-                booking.ActualCheckOutTime = actualCheckOutTime;
+                booking.CheckOutTime = actualCheckOutTime;
                 booking.FinalBillAmount = finalBill;
                 booking.IsPaymentCompleted = true;
 
@@ -106,7 +100,7 @@ namespace guest_house_management_backend.Services.Bookings
                     BookingId = booking.Id,
                     GuestName = booking.Guest.Name,
                     RoomNumber = booking.Room.RoomNumber,
-                    CheckInTime = booking.ActualCheckInTime.Value,
+                    CheckInTime = booking.CheckInTime.Value,
                     CheckOutTime = actualCheckOutTime,
                     TotalNights = totalNights,
                     FinalBillAmount = finalBill,

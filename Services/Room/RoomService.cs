@@ -1,5 +1,5 @@
 ﻿using guest_house_management_backend.DTOs;
-using guest_house_management_backend.Models;
+using guest_house_management_backend.DTOs.Paging;
 using guest_house_management_backend.Repositories.RoomRepo;
 using guest_house_management_backend.Repositories.RoomTypeRepo;
 
@@ -32,7 +32,7 @@ namespace guest_house_management_backend.Services.Room
             return room.RoomStatus;
         }
 
-        public async Task<object> GetRoomStatusSummaryAsync()
+        public async Task<RoomsSummaryDto> GetRoomStatusSummaryAsync()
         {
             return await _roomRepository.GetRoomStatusSummaryAsync();
         }
@@ -92,9 +92,9 @@ namespace guest_house_management_backend.Services.Room
             return true;
         }
 
-        public async Task<IEnumerable<RoomResponseDto>> getAllRoomAsync()
+        public async Task<Paging<RoomResponseDto>> getAllRoomAsync(int pageNumber , int pageSize , int roomStatus , int roomType)
         {
-            return await _roomRepository.GetAllRoomsAsync();
+            return await _roomRepository.GetAllRoomsAsync(pageNumber , pageSize , roomStatus , roomType);
         }
     }
 }

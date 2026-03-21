@@ -1,12 +1,13 @@
 ﻿using guest_house_management_backend.Data;
-using guest_house_management_backend.Data.Configurations;
 using guest_house_management_backend.DTOs;
+using guest_house_management_backend.DTOs.Paging;
 using guest_house_management_backend.Enums;
 using guest_house_management_backend.Models;
-using guest_house_management_backend.Repositories.AvailableRoomRepo;
 using guest_house_management_backend.Repositories.BookingRepo;
 using guest_house_management_backend.Repositories.GuestRepo;
+using guest_house_management_backend.Repositories.PaymentRepo;
 using guest_house_management_backend.Repositories.RoomRepo;
+using guest_house_management_backend.Repositories.UnitOfWorkRepo;
 using guest_house_management_backend.Services.Email;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -17,19 +18,21 @@ namespace guest_house_management_backend.Services.Bookings
     {
         private readonly IBookingRepository _repository;
         private readonly IRoomRepository _roomRepository;
-        private readonly DBContext _context;
         private readonly IEmailSender _emailSender;
         private readonly IGuestRepository _guestRepositroy;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IPaymentRepository _paymentRepository;
 
-        public BookingService(IHttpContextAccessor httpContextAccessor,IGuestRepository guestRepository,IBookingRepository repository,IRoomRepository roomRepository ,DBContext context ,IEmailSender emailSender)
+        public BookingService(IHttpContextAccessor httpContextAccessor,IGuestRepository guestRepository,IBookingRepository repository,IRoomRepository roomRepository ,DBContext context ,IEmailSender emailSender, IUnitOfWork unitOfWork , IPaymentRepository paymentRepository)
         {
             _repository = repository;
             _roomRepository = roomRepository;
-            _context = context;
             _emailSender = emailSender;
             _guestRepositroy = guestRepository;
             _httpContextAccessor = httpContextAccessor;
+            _unitOfWork = unitOfWork;
+            _paymentRepository = paymentRepository;
         }
 
         public async Task<IEnumerable<RoomResponseDto>> GetAllAvailableRooms(RoomAvaiblityRequestDto roomAvaiblityRequest)
@@ -37,9 +40,9 @@ namespace guest_house_management_backend.Services.Bookings
             return await _repository.GetAvailableRooms(roomAvaiblityRequest);
         }
 
-        public async Task<IEnumerable<BookingResponseDto>> GetAllAsync()
+        public async Task<Paging<BookingResponseDto>> GetAllAsync(int pageNumber , int pageSize , string searchUser , string roomNumber ,int statusFilter)
         {
-            return await _repository.GetAllAsync();
+            return await _repository.GetAllAsync(pageNumber , pageSize , searchUser , roomNumber , statusFilter);
         }
 
 
@@ -53,7 +56,7 @@ namespace guest_house_management_backend.Services.Bookings
             var emailFromJwt = user?.FindFirst(ClaimTypes.Email)?.Value;
             var nameFromJwt = user?.FindFirst(ClaimTypes.Name)?.Value;
 
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var isAvailable = await _repository.IsRoomAvailableAsync(
@@ -64,10 +67,9 @@ namespace guest_house_management_backend.Services.Bookings
                 {
                     throw new InvalidOperationException("Room not available.");
                 }
-                var room = await _context.Rooms
-                            .Include(r => r.RoomType)
-                            .FirstOrDefaultAsync(r => r.Id == createRequest.RoomId);
-                if(room == null)
+                var room = await _roomRepository.GetRoomByIdAsync(createRequest.RoomId);
+
+                if (room == null)
                 {
                     throw new KeyNotFoundException("Room not found");
                 }
@@ -94,8 +96,17 @@ namespace guest_house_management_backend.Services.Bookings
                     SpecialRequests = createRequest.SpecialRequests
                 };
                 await _repository.AddAsync(booking);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                await _repository.SaveChangesAsync();
+                await _paymentRepository.createpayment(new Payment
+                {
+                    BookingId = booking.Id,
+                    TotalAmount = totalPrice,
+                    Status = Enums.PaymentStatusEnum.Pending,
+                    PaymentDate = DateTime.UtcNow,
+
+                });
+                await _repository.SaveChangesAsync();
+                await _unitOfWork.CommitAsync();
 
                 await _emailSender.SendEmailASync(
                 guest.Email!,
@@ -120,14 +131,14 @@ namespace guest_house_management_backend.Services.Bookings
             }
             catch
             {
-                await transaction.RollbackAsync();
+                await _unitOfWork.RollbackAsync();
                 throw;
             }
         }
 
         public async Task<BookingResponseDto> UpdateAsync(int id, UpdateBookingDto updateRequest)
         {
-            await using var transaction = await _context.Database.BeginTransactionAsync();
+            await _unitOfWork.BeginTransactionAsync();
 
             try
             {
@@ -158,8 +169,8 @@ namespace guest_house_management_backend.Services.Bookings
                     await _roomRepository.UpdateRoomStatusAsync(booking.RoomId, Enums.RoomStatusEnum.Available);
                 }
 
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                await _repository.SaveChangesAsync();
+                await _unitOfWork.CommitAsync();
 
                 return new BookingResponseDto
                 {
@@ -174,7 +185,7 @@ namespace guest_house_management_backend.Services.Bookings
             }
             catch
             {
-                await transaction.RollbackAsync();
+                await _unitOfWork.RollbackAsync();
                 throw;
             }
         }
@@ -186,7 +197,7 @@ namespace guest_house_management_backend.Services.Bookings
                 throw new KeyNotFoundException("Booking not found.");
 
             await _repository.DeleteAysnc(booking.Id);
-            await _context.SaveChangesAsync();
+            await _repository.SaveChangesAsync();
         }
 
         public async Task CancelBooking(int id)
@@ -231,6 +242,11 @@ namespace guest_house_management_backend.Services.Bookings
         {
             var days = (checkOut - checkIn).Days;
             return days * room.RoomType.PricePerNight;
+        }
+
+        public async Task<Paging<BookingResponseDto>> GetUserBookingsAsync(int pageNumber, int pageSize, string guestEmail , string roomNumber , int statusFilter)
+        {
+            return await _repository.GetUserBookings(pageNumber, pageSize, guestEmail, roomNumber , statusFilter);   
         }
     }
 }

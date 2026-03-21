@@ -15,6 +15,7 @@ namespace guest_house_management_backend.Data
         public DbSet<RoomTypeAmenity> RoomTypeAmenities { get; set; }
         public DbSet<Guest> Guest { get; set; }
         public DbSet<Booking> Bookings { get; set; }
+        public DbSet<Payment> Payments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

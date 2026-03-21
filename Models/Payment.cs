@@ -16,14 +16,9 @@ namespace guest_house_management_backend.Models
 
         [Required]
         public PaymentStatusEnum Status { get; set; } = PaymentStatusEnum.Pending;
-
-        [Required]
-        public string PaymentMethod { get; set; } = null!;
-
+        public string? PaymentMethod { get; set; } = null!;
         [Required]
         public DateTime PaymentDate { get; set; }
-
-        [Required]
-        public string TransactionId { get; set; } = null!;
+        public string? TransactionId { get; set; } = null!;
     }
 }

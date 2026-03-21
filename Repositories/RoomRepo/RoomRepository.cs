@@ -1,6 +1,8 @@
-﻿using guest_house_management_backend.Data;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using guest_house_management_backend.Data;
 using guest_house_management_backend.DTOs;
-using guest_house_management_backend.Enums;
+using guest_house_management_backend.DTOs.Paging;
 using guest_house_management_backend.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,17 +11,19 @@ namespace guest_house_management_backend.Repositories.RoomRepo
     public class RoomRepository: IRoomRepository
     {
         private readonly DBContext _context;
+        private readonly IMapper _mapper;
 
-        public RoomRepository(DBContext context)
+        public RoomRepository(DBContext context ,IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         public async Task<Room?> GetRoomByIdAsync(int id)
         {
             try
             {
-                return await _context.Rooms.FindAsync(id);
+                return await _context.Rooms.Include(r=>r.RoomType).FirstOrDefaultAsync(r=> r.Id == id);
             }
             catch (Exception ex)
             {
@@ -48,11 +52,11 @@ namespace guest_house_management_backend.Repositories.RoomRepo
             }
         }
 
-        public async Task<object> GetRoomStatusSummaryAsync()
+        public async Task<RoomsSummaryDto> GetRoomStatusSummaryAsync()
         {
             try
             {
-                return new
+                return new RoomsSummaryDto
                 {
                     Available = await _context.Rooms.CountAsync(r => r.RoomStatus == Enums.RoomStatusEnum.Available),
                     Occupied = await _context.Rooms.CountAsync(r => r.RoomStatus == Enums.RoomStatusEnum.Occupied),
@@ -102,18 +106,38 @@ namespace guest_house_management_backend.Repositories.RoomRepo
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<RoomResponseDto>> GetAllRoomsAsync()
+        public async Task<Paging<RoomResponseDto>> GetAllRoomsAsync(int pageNumber , int pageSize , int roomStatus , int roomType)
         {
-            return await _context.Rooms.Select(room => new RoomResponseDto
+            var query = _context.Rooms.AsQueryable();
+
+            if (roomStatus != 0)
             {
-                Id = room.Id,
-                RoomNumber = room.RoomNumber,
-                RoomTypeId = room.RoomTypeId,
-                RoomTypeName = room.RoomType.RoomTypeName.ToString(),
-                Capacity = room.RoomType.Capacity,
-                PricePerNight = room.RoomType.PricePerNight,
-                RoomStatus = room.RoomStatus
-            }).ToListAsync();
+                query = query.Where(r => r.RoomStatus == (Enums.RoomStatusEnum)roomStatus);
+            }
+
+            if (roomType != 0)
+            {
+                query = query.Where(r => r.RoomTypeId == roomType);
+
+            }
+
+            var totalCount = await query.CountAsync();
+            var res = await query.OrderBy(r=>r.RoomNumber)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ProjectTo<RoomResponseDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+
+            return new Paging<RoomResponseDto>
+            {
+                Data = res,
+                MetaData =
+                {
+                    TotalCount = totalCount,
+                    PageSize = pageSize,
+                    CurrentPage = pageNumber
+                }
+            };
         }
     }
 }

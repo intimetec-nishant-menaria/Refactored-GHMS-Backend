@@ -1,32 +1,24 @@
 ﻿using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Repositories.GuestRepo;
-using guest_house_management_backend.Models;
+using guest_house_management_backend.DTOs.Paging;
+using AutoMapper;
 
 namespace guest_house_management_backend.Services.Guest
 {
     public class GuestService : IGuestService
     {
         public readonly IGuestRepository _guestRepository;
-        public GuestService(IGuestRepository guestRepository)
+        private readonly IMapper _mapper;
+
+        public GuestService(IGuestRepository guestRepository,IMapper mapper)
         {
             _guestRepository = guestRepository;
+            _mapper = mapper;
         }
 
-        public async Task<IEnumerable<GuestResponseDto>> GetAllGuestsAsync()
+        public async Task<Paging<GuestResponseDto>> GetAllGuestsAsync(int pageNumber , int pageSize , string searchUser)
         {
-            var guests = await _guestRepository.GetAllAsync();
-
-            return guests.Select(g => new GuestResponseDto
-            {
-                Id = g.Id,
-                Name = g.Name,
-                Contact = g.Contact,
-                Email = g.Email,
-                IDProof = g.IDProof,
-                Address = g.Address,
-                EmergencyContact = g.EmergencyContact,
-                CreatedAt = g.CreatedAt
-            });
+            return await _guestRepository.GetAllAsync(pageNumber , pageSize , searchUser);
         }
 
         public async Task CreateGuestAsync(CreateGuestDto createdRequest)
@@ -66,17 +58,7 @@ namespace guest_house_management_backend.Services.Guest
             if (guest == null)
                 throw new KeyNotFoundException("Guest not found.");
 
-            return new GuestResponseDto
-            {
-                Id = guest.Id,
-                Name = guest.Name,
-                Email = guest.Email,
-                Contact = guest.Contact,
-                IDProof = guest.IDProof,
-                Address = guest.Address,
-                EmergencyContact = guest.EmergencyContact,
-                CreatedAt = guest.CreatedAt
-            };
+            return _mapper.Map<GuestResponseDto>(guest);
         }
 
         public async Task UpdateGuestAsync(int guestId, UpdateGuestDto updateRequest)
@@ -85,21 +67,22 @@ namespace guest_house_management_backend.Services.Guest
             if (guest == null)
                 throw new KeyNotFoundException("Guest not found.");
 
-            //var isDuplicate = await _guestRepository
-            //    .IsDuplicateAsync(updateRequest.Email, updateRequest.Contact);
+            var isDuplicate = await _guestRepository
+                .IsDuplicateAsync(updateRequest.Email, updateRequest.Contact);
+            var duplicateGuest = await _guestRepository.GetByEmailAsync(updateRequest.Email);
 
-            //if (isDuplicate && (guest.Email != updateRequest.Email || guest.Contact != updateRequest.Contact))
-            //    throw new InvalidOperationException("Guest with this Email or Contact already exists.");
+            if (isDuplicate &&  duplicateGuest!=null && guest.Id != duplicateGuest.Id )
+                throw new InvalidOperationException("Guest with this Email or Contact already exists.");
 
-                guest.Name = updateRequest.Name;
-                guest.Email = updateRequest.Email;
-                guest.Contact = updateRequest.Contact;
-                guest.IDProof = updateRequest.IDProof;
-                guest.Address = updateRequest.Address;
-                guest.EmergencyContact = updateRequest.EmergencyContact;
-                guest.UpdatedAt = DateTime.UtcNow;
+            guest.Name = updateRequest.Name;
+            guest.Email = updateRequest.Email;
+            guest.Contact = updateRequest.Contact;
+            guest.IDProof = updateRequest.IDProof;
+            guest.Address = updateRequest.Address;
+            guest.EmergencyContact = updateRequest.EmergencyContact;
+            guest.UpdatedAt = DateTime.UtcNow;
 
-                await _guestRepository.UpdateAsync(guest);
+            await _guestRepository.UpdateAsync(guest);
         }
 
         public async Task<IEnumerable<GuestResponseDto>> SearchGuestsAsync(string search)
@@ -111,17 +94,7 @@ namespace guest_house_management_backend.Services.Guest
 
             var guests = await _guestRepository.SearchAsync(search);
 
-            return guests.Select(g => new GuestResponseDto
-            {
-                Id = g.Id,
-                Name = g.Name,
-                Email = g.Email,
-                Contact = g.Contact,
-                IDProof = g.IDProof,
-                Address = g.Address,
-                EmergencyContact = g.EmergencyContact,
-                CreatedAt = g.CreatedAt
-            });
+            return _mapper.Map<IEnumerable<GuestResponseDto>>(guests);
         }
         public async Task<GuestBookingHistoryResponseDto> GetGuestBookingHistoryAsync(int guestId, GuestBookingHistoryQueryDto guestBookingDto)
         {

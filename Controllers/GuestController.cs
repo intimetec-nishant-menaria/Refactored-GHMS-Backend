@@ -18,9 +18,9 @@ namespace guest_house_management_backend.Controllers
         }
 
         [HttpGet("getAllGuests")]
-        public async Task<IActionResult> GetAllGuests()
+        public async Task<IActionResult> GetAllGuests([FromQuery] int pageNumber , [FromQuery] int pageSize , [FromQuery] string? searchUser)
         {
-            var guest =  await _guestService.GetAllGuestsAsync();
+            var guest =  await _guestService.GetAllGuestsAsync(pageNumber , pageSize,searchUser);
             return Ok(guest);
         }
 
@@ -52,12 +52,25 @@ namespace guest_house_management_backend.Controllers
         [HttpPut("{id}/updateGuest")]
         public async Task<IActionResult> Update(int id, UpdateGuestDto updateRequest)
         {
-            await _guestService.UpdateGuestAsync(id, updateRequest);
-
-            return Ok(new
+            try
             {
-                message = "Guest updated successfully."
-            });
+                await _guestService.UpdateGuestAsync(id, updateRequest);
+
+                return Ok(new
+                {
+                    message = "Guest updated successfully."
+                });
+            }catch(InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = ex.Message,
+                });
+            }
         }
 
         [HttpDelete("{id}/deleteGuest")]

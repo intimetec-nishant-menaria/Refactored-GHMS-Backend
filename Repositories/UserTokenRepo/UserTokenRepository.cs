@@ -1,5 +1,4 @@
-﻿using guest_house_management_backend.Data;
-using guest_house_management_backend.Enums;
+﻿using guest_house_management_backend.Enums;
 using guest_house_management_backend.Models;
 using Microsoft.EntityFrameworkCore;
 

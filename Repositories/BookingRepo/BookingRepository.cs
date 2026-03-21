@@ -3,37 +3,56 @@ using guest_house_management_backend.Enums;
 using guest_house_management_backend.Models;
 using guest_house_management_backend.DTOs;
 using Microsoft.EntityFrameworkCore;
+using guest_house_management_backend.DTOs.Paging;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 
 namespace guest_house_management_backend.Repositories.BookingRepo
 {
     public class BookingRepository : IBookingRepository
     {
         public readonly DBContext _context;
+        private readonly IMapper _mapper;
 
-        public BookingRepository(DBContext context)
+        public BookingRepository(DBContext context,IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
-        public async Task<List<BookingResponseDto>> GetAllAsync()
+        public async Task<Paging<BookingResponseDto>> GetAllAsync(int pageNumber , int pageSize , string searchUser , string roomNumber ,int statusFilter)
         {
-            return await _context.Bookings
-            .Include(b => b.Guest)
-            .Include(b => b.Room)
-            .Select(b => new BookingResponseDto
+            var query = _context.Bookings.Include(b => b.Guest).Include(b => b.Room).AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchUser))
             {
-                Id = b.Id,
-                GuestId = b.GuestId,
-                GuestName = b.Guest.Name,
-                GuestEmail = b.Guest.Email,
-                RoomId = b.RoomId,
-                RoomNumber = b.Room.RoomNumber,
-                CheckInDate = b.CheckInDate,
-                CheckOutDate = b.CheckOutDate,
-                Status = b.Status,
-                price = b.price,
-                SpecialRequests = b.SpecialRequests
-            })
+                query = query.Where(b => b.Guest.Email.Contains(searchUser));
+            }
+
+            if (!string.IsNullOrWhiteSpace(roomNumber))
+            {
+                query = query.Where(b => b.Room.RoomNumber.Contains(roomNumber));
+            }
+
+            if (statusFilter != 0)
+            {
+                query = query.Where(b => b.Status == (Enums.BookingStatusEnum)statusFilter);
+            }
+
+            var totalCount = await query.CountAsync();
+            var res =await query.OrderBy(b=>b.Status).ThenByDescending(b=>b.CheckInDate).Skip((pageNumber - 1)*pageSize).Take(pageSize)
+            .ProjectTo<BookingResponseDto>(_mapper.ConfigurationProvider)
             .ToListAsync();
+
+            return new Paging<BookingResponseDto>
+            {
+                Data = res,
+                MetaData =
+                {
+                    TotalCount = totalCount,
+                    CurrentPage = pageNumber,
+                    PageSize = pageSize
+                }
+            };
         }
         public async Task<BookingResponseDto?> GetByIdAsync(int id)
         {
@@ -41,20 +60,7 @@ namespace guest_house_management_backend.Repositories.BookingRepo
                 .Include(b => b.Guest)
                 .Include(b => b.Room)
                 .Where(b => b.Id == id)
-                .Select(b => new BookingResponseDto
-                {
-                    Id = b.Id,
-                    GuestId = b.GuestId,
-                    GuestName = b.Guest.Name,
-                    RoomId = b.RoomId,
-                    RoomNumber = b.Room.RoomNumber,
-                    CheckInDate = b.CheckInDate,
-                    CheckOutDate = b.CheckOutDate,
-                    Status = b.Status,
-                    price = b.price,
-                    SpecialRequests = b.SpecialRequests
-
-                })
+                .ProjectTo<BookingResponseDto>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync(b => b.Id == id);
         }
         public async Task AddAsync(Booking booking)
@@ -102,16 +108,7 @@ namespace guest_house_management_backend.Repositories.BookingRepo
                             (b.CheckOutDate > roomAvaiblityRequest.checkIn ||
                             b.CheckInDate < roomAvaiblityRequest.checkOut )
             )
-                ).Select(room => new RoomResponseDto
-                {
-                    Id = room.Id,
-                    RoomNumber = room.RoomNumber,
-                    RoomTypeId = room.RoomTypeId,
-                    RoomTypeName = room.RoomType.RoomTypeName.ToString(),
-                    Capacity = room.RoomType.Capacity,
-                    PricePerNight = room.RoomType.PricePerNight,
-                    RoomStatus =room.RoomStatus
-                }).ToListAsync();
+                ).ProjectTo<RoomResponseDto>(_mapper.ConfigurationProvider).ToListAsync();
         }
         public async Task UpdateBookingAsync(Booking booking)
         {
@@ -160,6 +157,38 @@ namespace guest_house_management_backend.Repositories.BookingRepo
                 .Include(b => b.Room)
                 .Include(b => b.Guest)
                 .FirstOrDefaultAsync(b => b.Id == id);
+        }
+
+        public async Task<Paging<BookingResponseDto>> GetUserBookings(int pageNumber, int pageSize, string guestEmail , string roomNumber , int statusFilter)
+        {
+            var query =  _context.Bookings.Include(b => b.Guest).Where(b => b.Guest.Email == guestEmail).AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(roomNumber)){
+                query = query.Where(b => b.Room.RoomNumber.Contains(roomNumber));
+            }
+
+            if (statusFilter != 0)
+            {
+                query = query.Where(b => b.Status == (Enums.BookingStatusEnum)statusFilter);
+            }
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(b => b.CheckInDate)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ProjectTo<BookingResponseDto>(_mapper.ConfigurationProvider).ToListAsync();
+
+            return new Paging<BookingResponseDto>
+            {
+                Data = items,
+                MetaData =
+                {
+                    TotalCount = totalCount,
+                    CurrentPage = pageNumber,
+                    PageSize = pageSize
+                }
+            };
         }
     }
 }

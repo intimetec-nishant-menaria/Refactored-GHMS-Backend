@@ -1,8 +1,8 @@
 ﻿using guest_house_management_backend.DTOs;
+using guest_house_management_backend.DTOs.Paging;
 using guest_house_management_backend.Models;
 using guest_house_management_backend.Repositories.RoleRepo;
 using guest_house_management_backend.Repositories.UserRepo;
-using MimeKit.Encodings;
 
 namespace guest_house_management_backend.Services.UserManagement
 {
@@ -47,12 +47,12 @@ namespace guest_house_management_backend.Services.UserManagement
             await _userRepository.DeleteAsync(id);
         }
 
-        public async Task<IEnumerable<UserResponseDto>> GetAllUsersAsync()
+        public async Task<Paging<UserResponseDto>> GetAllUsersAsync(int pageNumber , int pageSize , string searchUser)
         {
-            return await _userRepository.GetAllAsync();
+            return await _userRepository.GetAllAsync(pageNumber , pageSize , searchUser);
         }
 
-        public async Task<User?> GetUserByIdAsync(int id)
+        public async Task<User> GetUserByIdAsync(int id)
         {
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)

@@ -1,4 +1,6 @@
-﻿using guest_house_management_backend.Data;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using guest_house_management_backend.Data;
 using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Enums;
 using guest_house_management_backend.Models;
@@ -9,9 +11,12 @@ namespace guest_house_management_backend.Repositories.AvailableRoomRepo
     public class AvailRoomRepostiory : IAvailRoomRepository
     {
         private readonly DBContext _context;
-        public AvailRoomRepostiory(DBContext context)
+        private readonly IMapper _mapper;
+
+        public AvailRoomRepostiory(DBContext context,IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
         public async Task<IEnumerable<RoomResponseDto>> GetAvailableRoomAsync(DateTime checkIn, DateTime checkOut)
         {
@@ -25,16 +30,8 @@ namespace guest_house_management_backend.Repositories.AvailableRoomRepo
                             (b.CheckOutDate >= checkIn ||
                             b.CheckInDate <= checkOut)
             )
-                ).Select(room => new RoomResponseDto
-                {
-                    Id = room.Id,
-                    RoomNumber = room.RoomNumber,
-                    RoomTypeId = room.RoomTypeId,
-                    RoomTypeName = room.RoomType.RoomTypeName.ToString(),
-                    Capacity = room.RoomType.Capacity,
-                    PricePerNight = room.RoomType.PricePerNight,
-                    RoomStatus = room.RoomStatus
-                }).ToListAsync();
+                ).ProjectTo<RoomResponseDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
         }
     }
 }

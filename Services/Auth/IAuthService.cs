@@ -10,6 +10,6 @@ namespace guest_house_management_backend.Services.Auth
         public Task<(bool Success , string Message)> ChangeUserPassword(int UserId,ChangePasswordDto changePasswordRequest);
         public Task ForgetUserPasswordAsync(ForgetPasswordDto forgetPasswordRequest);
         Task VerifyResetTokenAsync(string email, string token);
-        public Task ResetPasswordAsync(ResetPasswordDto resetPasswordRequest);
+        public Task ResetPasswordAsync(string email , string token, ResetPasswordDto resetPasswordRequest);
     }
 }

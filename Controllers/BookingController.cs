@@ -2,6 +2,7 @@
 using guest_house_management_backend.Services.Bookings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace guest_house_management_backend.Controllers
 {
@@ -20,9 +21,9 @@ namespace guest_house_management_backend.Controllers
 
         [Authorize(Roles = "Admin,Staff")]
         [HttpGet("getAllBookings")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] int pageNumber , [FromQuery] int pageSize , [FromQuery] string? searchUser , [FromQuery] string? roomNumber, [FromQuery] int statusFilter)
         {
-            return Ok(await _service.GetAllAsync());
+            return Ok(await _service.GetAllAsync(pageNumber, pageSize, searchUser, roomNumber, statusFilter));
         }
 
 
@@ -136,6 +137,16 @@ namespace guest_house_management_backend.Controllers
                     message = error.Message
                 });
             }
+        }
+
+        [Authorize]
+        [HttpGet("myBookings")]
+        public async Task<IActionResult> GetuserBookings([FromQuery] int pageNumber, [FromQuery] int pageSize , [FromQuery] string? roomNumber , [FromQuery] int statusFilter)
+        {
+            var guestEmail = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+            var res = await _service.GetUserBookingsAsync(pageNumber, pageSize, guestEmail! , roomNumber , statusFilter);
+
+            return Ok(res);
         }
     }
 }

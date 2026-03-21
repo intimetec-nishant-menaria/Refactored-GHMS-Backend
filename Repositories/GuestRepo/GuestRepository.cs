@@ -1,4 +1,8 @@
-﻿using guest_house_management_backend.Models;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using guest_house_management_backend.DTOs;
+using guest_house_management_backend.DTOs.Paging;
+using guest_house_management_backend.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace guest_house_management_backend.Repositories.GuestRepo
@@ -6,15 +10,40 @@ namespace guest_house_management_backend.Repositories.GuestRepo
     public class GuestRepository : IGuestRepository
     {
         private readonly Data.DBContext _context;
+        private readonly IMapper _mapper;
 
-        public GuestRepository(Data.DBContext context)
+        public GuestRepository(Data.DBContext context ,IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
-        public async Task<List<Guest>> GetAllAsync()
+        public async Task<Paging<GuestResponseDto>> GetAllAsync(int pageNumber , int pageSize , string searchUser)
         {
-            return await _context.Guest.ToListAsync();
+            var query = _context.Guest.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchUser))
+            {
+                query = query.Where(g => g.Email.Contains(searchUser));
+            }
+            var totalCount = await query.CountAsync();
+
+            var res = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ProjectTo<GuestResponseDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+
+            return new Paging<GuestResponseDto>
+            {
+                Data = res,
+                MetaData =
+                {
+                    TotalCount = totalCount,
+                    PageSize = pageSize,
+                    CurrentPage = pageNumber
+                }
+            };
         }
 
         public async Task<Guest?> GetByIdAsync(int guestId)

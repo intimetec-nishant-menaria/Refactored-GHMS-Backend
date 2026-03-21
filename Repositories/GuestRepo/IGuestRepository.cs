@@ -1,10 +1,12 @@
-﻿using guest_house_management_backend.Models;
+﻿using guest_house_management_backend.DTOs;
+using guest_house_management_backend.DTOs.Paging;
+using guest_house_management_backend.Models;
 
 namespace guest_house_management_backend.Repositories.GuestRepo
 {
     public interface IGuestRepository
     {
-        public Task<List<Guest>> GetAllAsync();
+        public Task<Paging<GuestResponseDto>> GetAllAsync(int pageNumber ,int pageSize , string searchUser);
         public Task<Guest?> GetByIdAsync(int guestId);
         public Task<Guest?> GetByEmailAsync(string email);
         public Task<List<Guest>> SearchAsync(string search);
