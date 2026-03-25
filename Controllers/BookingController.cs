@@ -21,7 +21,7 @@ namespace guest_house_management_backend.Controllers
 
         [Authorize(Roles = "Admin,Staff")]
         [HttpGet("getAllBookings")]
-        public async Task<IActionResult> GetAll([FromQuery] int pageNumber , [FromQuery] int pageSize , [FromQuery] string? searchUser , [FromQuery] string? roomNumber, [FromQuery] int statusFilter)
+        public async Task<ActionResult<IEnumerable<BookingResponseDto>>> GetAll([FromQuery] int pageNumber , [FromQuery] int pageSize , [FromQuery] string? searchUser , [FromQuery] string? roomNumber, [FromQuery] int statusFilter)
         {
             return Ok(await _service.GetAllAsync(pageNumber, pageSize, searchUser, roomNumber, statusFilter));
         }
@@ -29,7 +29,7 @@ namespace guest_house_management_backend.Controllers
 
         [Authorize(Roles = "Admin,Staff")]
         [HttpGet("getBookingById/{id}")]
-        public async Task<IActionResult> GetByIdAsync(int id)
+        public async Task<ActionResult<BookingResponseDto>> GetByIdAsync(int id)
         {
             return Ok(await _service.GetByIdAsync(id));
         }
@@ -61,7 +61,7 @@ namespace guest_house_management_backend.Controllers
 
 
         [Authorize(Roles = "Admin,Staff")]
-        [HttpPost("checkIn/{bookingId}")]
+        [HttpPut("checkIn/{bookingId}")]
         public async Task<IActionResult> CheckIn(int bookingId)
         {
             var checkIn = await _bookingService.CheckInAsync(bookingId);
@@ -70,7 +70,7 @@ namespace guest_house_management_backend.Controllers
 
 
         [Authorize(Roles = "Admin,Staff")]
-        [HttpPost("checkOut/{bookingId}")]
+        [HttpPut("checkOut/{bookingId}")]
         public async Task<IActionResult> CheckOut(int bookingId)
         {
             var checkOut = await _bookingService.CheckOutAsync(bookingId);
@@ -141,7 +141,7 @@ namespace guest_house_management_backend.Controllers
 
         [Authorize]
         [HttpGet("myBookings")]
-        public async Task<IActionResult> GetuserBookings([FromQuery] int pageNumber, [FromQuery] int pageSize , [FromQuery] string? roomNumber , [FromQuery] int statusFilter)
+        public async Task<ActionResult<IEnumerable<BookingResponseDto>>> GetuserBookings([FromQuery] int pageNumber, [FromQuery] int pageSize , [FromQuery] string? roomNumber , [FromQuery] int statusFilter)
         {
             var guestEmail = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
             var res = await _service.GetUserBookingsAsync(pageNumber, pageSize, guestEmail! , roomNumber , statusFilter);

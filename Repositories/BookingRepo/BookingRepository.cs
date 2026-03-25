@@ -132,21 +132,15 @@ namespace guest_house_management_backend.Repositories.BookingRepo
             return res;
         }
 
-        public async Task<IEnumerable<CalendarEventResponceDto>> fetchByRange(DateTime start ,DateTime end)
+        public async Task<IEnumerable<BookingResponseDto>> fetchByRange(DateTime start ,DateTime end)
         {
-            var res= await _context.Bookings.Include(b=>b.Guest).Where(
-                b =>
-                    b.CheckInDate < end &&
-                    b.CheckOutDate > start
-            ).Select( b=> new CalendarEventResponceDto
-            {
-                BookingId = b.Id,
-                UserName = b.Guest.Name,
-                RoomNumber = b.Room.RoomNumber,
-                Start = b.CheckInDate,
-                End = b.CheckOutDate,
-                BookingStatus = b.Status
-            }).ToListAsync();
+            var res= await _context.Bookings.Include(b=>b.Guest)
+                .Include(b => b.Room)
+                .Where(
+                    b =>
+                        b.CheckInDate < end &&
+                        b.CheckOutDate > start
+                ).ProjectTo<BookingResponseDto>(_mapper.ConfigurationProvider).ToListAsync();
 
             return res;
         }

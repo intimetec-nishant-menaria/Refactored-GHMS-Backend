@@ -15,7 +15,7 @@ namespace guest_house_management_backend.Controllers
         }
 
         [HttpPost("availability")]
-        public async Task<IActionResult> GetAvailability([FromQuery] AvailabilityRequestDto request)
+        public async Task<ActionResult<IEnumerable<RoomResponseDto>>> GetAvailability(AvailabilityRequestDto request)
         {
             var result = await _roomService.GetAvailableRoomsAsync(request);
             return Ok(result);

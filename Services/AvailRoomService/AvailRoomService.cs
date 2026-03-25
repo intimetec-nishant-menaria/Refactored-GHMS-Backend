@@ -14,7 +14,7 @@ namespace guest_house_management_backend.Services.AvailRoomService
 
         public async Task<IEnumerable<RoomResponseDto>> GetAvailableRoomsAsync(AvailabilityRequestDto request)
         {
-            if (request.CheckIn < request.CheckOut)
+            if (request.CheckIn > request.CheckOut)
             {
                 throw new InvalidOperationException("Check-out must be after check-in.");
             }

@@ -26,9 +26,9 @@ namespace guest_house_management_backend.Repositories.AvailableRoomRepo
                     !r.Bookings
                        .Any(b =>
                             b.Status != BookingStatusEnum.Cancelled &&
-                            b.Status != BookingStatusEnum.Completed &&
-                            (b.CheckOutDate >= checkIn ||
-                            b.CheckInDate <= checkOut)
+                            b.Status != BookingStatusEnum.Completed &&  
+                            b.CheckInDate < checkOut &&
+                            b.CheckOutDate > checkIn
             )
                 ).ProjectTo<RoomResponseDto>(_mapper.ConfigurationProvider)
                 .ToListAsync();

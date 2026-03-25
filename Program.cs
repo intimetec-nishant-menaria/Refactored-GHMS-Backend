@@ -1,7 +1,7 @@
 using guest_house_management_backend.Data;
 using guest_house_management_backend.Extensions;
 using Microsoft.EntityFrameworkCore;
-using guest_house_management_backend.Mapping;
+using guest_house_management_backend.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,7 +40,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseGlobalExceptionMiddleware();
+app.UseGlobalExceptionMiddleware();
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 

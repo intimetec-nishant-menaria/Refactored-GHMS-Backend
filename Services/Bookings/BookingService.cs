@@ -233,7 +233,7 @@ namespace guest_house_management_backend.Services.Bookings
             );
         }
 
-        public async Task<IEnumerable<CalendarEventResponceDto>> GetBookingsByRange(DateTime start, DateTime end)
+        public async Task<IEnumerable<BookingResponseDto>> GetBookingsByRange(DateTime start, DateTime end)
         {
             return await _repository.fetchByRange(start, end);
         }

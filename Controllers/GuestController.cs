@@ -18,7 +18,7 @@ namespace guest_house_management_backend.Controllers
         }
 
         [HttpGet("getAllGuests")]
-        public async Task<IActionResult> GetAllGuests([FromQuery] int pageNumber , [FromQuery] int pageSize , [FromQuery] string? searchUser)
+        public async Task<ActionResult<IEnumerable<GuestResponseDto>>> GetAllGuests([FromQuery] int pageNumber , [FromQuery] int pageSize , [FromQuery] string? searchUser)
         {
             var guest =  await _guestService.GetAllGuestsAsync(pageNumber , pageSize,searchUser);
             return Ok(guest);

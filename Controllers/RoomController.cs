@@ -61,7 +61,7 @@ namespace guest_house_management_backend.Controllers
         }
 
         [HttpGet("getSummary")]
-        public async Task<IActionResult> GetStatusSummary()
+        public async Task<ActionResult<RoomsSummaryDto>> GetStatusSummary()
         {
             try
             {
@@ -140,7 +140,7 @@ namespace guest_house_management_backend.Controllers
             }
         }
         [HttpGet("getAllRooms")]
-        public async Task<IActionResult> GetAllRoomsAsync([FromQuery] int pageNumber , [FromQuery] int pageSize , [FromQuery] int roomStatus , [FromQuery] int roomType)
+        public async Task<ActionResult<IEnumerable<RoomResponseDto>>> GetAllRoomsAsync([FromQuery] int pageNumber , [FromQuery] int pageSize , [FromQuery] int roomStatus , [FromQuery] int roomType)
         {
             try
             {

@@ -21,7 +21,7 @@ namespace guest_house_management_backend.Repositories.BookingRepo
             DateTime CheckOut,
             int? excludeBookingId = null);
 
-        public Task<IEnumerable<CalendarEventResponceDto>> fetchByRange(DateTime start, DateTime end);
+        public Task<IEnumerable<BookingResponseDto>> fetchByRange(DateTime start, DateTime end);
         public Task<Booking?> getBookingById(int id);
         public Task<Paging<BookingResponseDto>> GetUserBookings(int pageNumber, int pageSize, string guestEmail , string roomNumber , int statusFilter);
     }

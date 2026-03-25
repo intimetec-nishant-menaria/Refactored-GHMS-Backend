@@ -13,10 +13,6 @@ namespace guest_house_management_backend.Data.Configurations
                 .HasIndex(g => g.Email)
                 .IsUnique();
 
-            builder
-                .HasIndex(g => g.Contact)
-                .IsUnique();
-
             builder.HasData(
                 new Guest
                 {
