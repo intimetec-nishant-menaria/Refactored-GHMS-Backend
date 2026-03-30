@@ -1,5 +1,4 @@
 ﻿using guest_house_management_backend.DTOs;
-using guest_house_management_backend.Enums;
 using guest_house_management_backend.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -58,7 +57,7 @@ namespace guest_house_management_backend.Controllers
                 Response.Cookies.Append("jwtToken", res.token, cookieOptions);
                 return Ok(new
                 {
-                    message = "Login successful",
+                    message = "Login successful"
                 });
             }
             catch(UnauthorizedAccessException ex)

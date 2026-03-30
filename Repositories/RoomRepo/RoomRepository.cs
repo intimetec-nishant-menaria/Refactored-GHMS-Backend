@@ -23,7 +23,7 @@ namespace guest_house_management_backend.Repositories.RoomRepo
         {
             try
             {
-                return await _context.Rooms.Include(r=>r.RoomType).FirstOrDefaultAsync(r=> r.Id == id);
+                return await _context.Rooms.FirstOrDefaultAsync(r=> r.Id == id);
             }
             catch (Exception ex)
             {
@@ -38,9 +38,9 @@ namespace guest_house_management_backend.Repositories.RoomRepo
                 var room = await _context.Rooms.FindAsync(id);
                 if (room == null)
                     return false;
-                if (room.RoomStatus != status)
+                if (room.Status != status)
                 {
-                    room.RoomStatus = status;
+                    room.Status = status;
                     room.UpdatedAt = DateTime.UtcNow; 
                 }
                 await _context.SaveChangesAsync();
@@ -58,10 +58,10 @@ namespace guest_house_management_backend.Repositories.RoomRepo
             {
                 return new RoomsSummaryDto
                 {
-                    Available = await _context.Rooms.CountAsync(r => r.RoomStatus == Enums.RoomStatusEnum.Available),
-                    Occupied = await _context.Rooms.CountAsync(r => r.RoomStatus == Enums.RoomStatusEnum.Occupied),
-                    Maintenance = await _context.Rooms.CountAsync(r => r.RoomStatus == Enums.RoomStatusEnum.Maintenance),
-                    OutOfOrder = await _context.Rooms.CountAsync(r => r.RoomStatus == Enums.RoomStatusEnum.OutOfOrder)
+                    Available = await _context.Rooms.CountAsync(r => r.Status == Enums.RoomStatusEnum.Available),
+                    Occupied = await _context.Rooms.CountAsync(r => r.Status == Enums.RoomStatusEnum.Occupied),
+                    Maintenance = await _context.Rooms.CountAsync(r => r.Status == Enums.RoomStatusEnum.Maintenance),
+                    OutOfOrder = await _context.Rooms.CountAsync(r => r.Status == Enums.RoomStatusEnum.OutOfOrder)
                 };
             }
             catch (Exception ex)
@@ -81,14 +81,6 @@ namespace guest_house_management_backend.Repositories.RoomRepo
                 .AnyAsync(r => r.RoomNumber == roomNumber);
         }
 
-        public async Task<RoomType?> GetRoomTypeByIdAsync(int roomTypeId)
-        {
-            return await _context.RoomTypes
-                .Include(rt => rt.RoomTypeAmenities)
-                .ThenInclude(rta => rta.Amenity)
-                .FirstOrDefaultAsync(rt => rt.Id == roomTypeId);
-        }
-
         public async Task<bool> DeleteRoomByIdAsync(int id)
         {
             var room = await _context.Rooms.FindAsync(id);
@@ -106,19 +98,18 @@ namespace guest_house_management_backend.Repositories.RoomRepo
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Paging<RoomResponseDto>> GetAllRoomsAsync(int pageNumber , int pageSize , int roomStatus , int roomType)
+        public async Task<Paging<RoomResponseDto>> GetAllRoomsAsync(int pageNumber , int pageSize , int roomStatus , string roomNumber)
         {
             var query = _context.Rooms.AsQueryable();
 
             if (roomStatus != 0)
             {
-                query = query.Where(r => r.RoomStatus == (Enums.RoomStatusEnum)roomStatus);
+                query = query.Where(r => r.Status == (Enums.RoomStatusEnum)roomStatus);
             }
 
-            if (roomType != 0)
+            if (!string.IsNullOrEmpty(roomNumber))
             {
-                query = query.Where(r => r.RoomTypeId == roomType);
-
+                query = query.Where(r => r.RoomNumber.Contains(roomNumber));
             }
 
             var totalCount = await query.CountAsync();

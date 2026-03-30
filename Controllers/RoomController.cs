@@ -140,11 +140,11 @@ namespace guest_house_management_backend.Controllers
             }
         }
         [HttpGet("getAllRooms")]
-        public async Task<ActionResult<IEnumerable<RoomResponseDto>>> GetAllRoomsAsync([FromQuery] int pageNumber , [FromQuery] int pageSize , [FromQuery] int roomStatus , [FromQuery] int roomType)
+        public async Task<ActionResult<IEnumerable<RoomResponseDto>>> GetAllRoomsAsync([FromQuery] int pageNumber , [FromQuery] int pageSize , [FromQuery] int roomStatus, [FromQuery] string? roomNumber )
         {
             try
             {
-                var rooms = await _roomService.getAllRoomAsync(pageNumber , pageSize , roomStatus , roomType);
+                var rooms = await _roomService.getAllRoomAsync(pageNumber , pageSize , roomStatus , roomNumber );
                 return Ok(rooms);
             }catch(Exception ex)
             {

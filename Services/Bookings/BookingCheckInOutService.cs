@@ -30,14 +30,14 @@ namespace guest_house_management_backend.Services.Bookings
                     throw new Exception("Only booked reservations can be checked in!");
                 }   
 
-                if (booking.Room.RoomStatus != RoomStatusEnum.Available)
+                if (booking.Room.Status != RoomStatusEnum.Available)
                 {
                     throw new Exception("Room is not available!");
                 }
 
                 booking.Status = BookingStatusEnum.CheckedIn;
                 booking.CheckInTime = DateTime.UtcNow;
-                booking.Room.RoomStatus = RoomStatusEnum.Occupied;
+                booking.Room.Status = RoomStatusEnum.Occupied;
 
                 await _bookingRepository.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -45,11 +45,11 @@ namespace guest_house_management_backend.Services.Bookings
                 return new CheckInResponseDto
                 {
                     BookingId = booking.Id,
-                    GuestName = booking.Guest.Name,
+                    GuestName = booking.GuestName,
                     RoomNumber = booking.Room.RoomNumber,
-                    ActualCheckInTime = booking.CheckInTime.Value,
+                    ActualCheckInTime = booking.CheckInTime,
                     BookingStatus = booking.Status.ToString(),
-                    RoomStatus = booking.Room.RoomStatus.ToString()
+                    RoomStatus = booking.Room.Status.ToString()
                 };
             }
             catch
@@ -77,20 +77,11 @@ namespace guest_house_management_backend.Services.Bookings
 
                 var actualCheckOutTime = DateTime.UtcNow;
 
-                var totalNights = (actualCheckOutTime.Date - booking.CheckInTime!.Value.Date).Days;
-                if (totalNights <= 0)
-                {
-                    totalNights = 1;
-                }
-
-                var finalBill = totalNights * booking.Room.RoomType.PricePerNight;
 
                 booking.Status = BookingStatusEnum.Completed;
                 booking.CheckOutTime = actualCheckOutTime;
-                booking.FinalBillAmount = finalBill;
-                booking.IsPaymentCompleted = true;
 
-                booking.Room.RoomStatus = RoomStatusEnum.Available;
+                booking.Room.Status = RoomStatusEnum.Available;
 
                 await _bookingRepository.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -98,14 +89,12 @@ namespace guest_house_management_backend.Services.Bookings
                 return new CheckOutResponseDto
                 {
                     BookingId = booking.Id,
-                    GuestName = booking.Guest.Name,
+                    GuestName = booking.GuestName,
                     RoomNumber = booking.Room.RoomNumber,
-                    CheckInTime = booking.CheckInTime.Value,
+                    CheckInTime = booking.CheckInTime,
                     CheckOutTime = actualCheckOutTime,
-                    TotalNights = totalNights,
-                    FinalBillAmount = finalBill,
                     BookingStatus = booking.Status.ToString(),
-                    RoomStatus = booking.Room.RoomStatus.ToString()
+                    RoomStatus = booking.Room.Status.ToString()
                 };
             }
             catch

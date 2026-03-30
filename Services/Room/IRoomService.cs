@@ -6,7 +6,7 @@ namespace guest_house_management_backend.Services.Room
 {
     public interface IRoomService
     {
-        Task<Paging<RoomResponseDto>> getAllRoomAsync(int pageNumber , int pageSize , int roomStatus , int roomType);  
+        Task<Paging<RoomResponseDto>> getAllRoomAsync(int pageNumber , int pageSize , int roomStatus , string roomNumber);  
         Task<bool> UpdateRoomStatusAsync(int id, RoomStatusEnum status);
         Task<RoomStatusEnum?> GetRoomStatusAsync(int id);
         Task<RoomsSummaryDto> GetRoomStatusSummaryAsync();

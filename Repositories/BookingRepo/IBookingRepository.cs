@@ -7,7 +7,7 @@ namespace guest_house_management_backend.Repositories.BookingRepo
     public interface IBookingRepository
     {
         Task<Paging<BookingResponseDto>> GetAllAsync(int pageNumber , int pageSize ,string searchUser , string roomNumber ,int statusFilter);
-        Task<BookingResponseDto?> GetByIdAsync(int id);
+        Task<Booking> GetByIdAsync(int id);
         Task AddAsync(Booking booking);
         Task UpdateAsync(Booking booking);
         Task DeleteAysnc(int id);

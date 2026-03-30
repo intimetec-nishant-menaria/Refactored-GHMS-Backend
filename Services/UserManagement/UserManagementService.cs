@@ -75,7 +75,6 @@ namespace guest_house_management_backend.Services.UserManagement
             user.Email = dto.Email.ToLower();
             user.RoleId = roleId;
             user.IsActive = dto.IsActive;
-            user.UpdatedAt = DateTime.UtcNow;
 
             await _userRepository.SaveChangesAsync();
         }

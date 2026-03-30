@@ -10,7 +10,7 @@ namespace guest_house_management_backend.Services.Bookings
         Task <Paging<BookingResponseDto>> GetAllAsync(int pageNumber , int pageSize ,string searchUser , string roomNumber ,int statusFilter);
         Task<BookingResponseDto> GetByIdAsync(int id);
         Task CreateAsync(CreateBookingDto dto);
-        Task<BookingResponseDto> UpdateAsync(int id, UpdateBookingDto dto);
+        Task UpdateAsync(int id, UpdateBookingDto dto);
         Task DeleteAsync(int id);
         Task CancelBooking(int id);
         Task<IEnumerable<BookingResponseDto>> GetBookingsByRange(DateTime start , DateTime end);

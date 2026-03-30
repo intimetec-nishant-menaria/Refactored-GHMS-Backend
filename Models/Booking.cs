@@ -1,34 +1,23 @@
 ﻿using guest_house_management_backend.Enums;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace guest_house_management_backend.Models
 {
     public class Booking
     {
-        [Key]
         public int Id { get; set; }
-        [Required]
+        public int BugId { get; set; }
+        public string GuestName { get; set; } = string.Empty;
+        public string GuestEmail { get; set; } = string.Empty;
+        public GenderEnum GuestGender { get; set; }
         public int RoomId { get; set; }
         public Room Room { get; set; } = null!;
-        [Required]
-        public int GuestId { get; set; }
-        public Guest Guest { get; set; } = null!;
-        [Required]
+        public BookingStatusEnum Status { get; set; } = BookingStatusEnum.Booked;
         public DateTime CheckInDate { get; set; }
-        [Required]
         public DateTime CheckOutDate { get; set; }
-        public DateTime? CheckInTime { get; set; }
-        public DateTime? CheckOutTime { get; set; }
-        [Required]
-        public BookingStatusEnum Status { get; set; }
-        public decimal price { get; set; }
-        public decimal? FinalBillAmount { get; set; }
-        public bool IsPaymentCompleted { get; set; } = false;
-        public string? SpecialRequests { get; set; }
-        [Required]
+        public DateTime CheckInTime { get; set; }
+        public DateTime CheckOutTime { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
-        public ICollection<Payment> Payments { get; set; } = new List<Payment>();
+        public ICollection<AuditLog> AuditLogs { get; set; } = new List<AuditLog>();
     }
 }

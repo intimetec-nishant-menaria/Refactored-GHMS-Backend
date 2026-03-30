@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using guest_house_management_backend.Data;
 using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Enums;
-using guest_house_management_backend.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace guest_house_management_backend.Repositories.AvailableRoomRepo
@@ -18,19 +16,37 @@ namespace guest_house_management_backend.Repositories.AvailableRoomRepo
             _context = context;
             _mapper = mapper;
         }
-        public async Task<IEnumerable<RoomResponseDto>> GetAvailableRoomAsync(DateTime checkIn, DateTime checkOut)
+        public async Task<IEnumerable<RoomResponseDto>> GetAvailableRoomAsync(GenderEnum gender,DateTime checkIn, DateTime checkOut)
         {
-            return await _context.Rooms
-                .Include(r => r.RoomType)
-                .Where(r =>
-                    !r.Bookings
-                       .Any(b =>
+            var query = _context.Rooms.AsQueryable();
+            if (gender == GenderEnum.Female)
+            {
+                query = query.Where(r => r.Floor == 1 || r.Floor == 3 || r.Floor == 4);
+            }
+            else if (gender == GenderEnum.Male)
+            {
+                query = query.Where(r => r.Floor == 2 || r.Floor == 3 || r.Floor == 4);
+            }
+
+            return await query
+                .Select(r => new RoomResponseDto
+                {
+                    Id = r.Id,
+                    RoomNumber = r.RoomNumber,
+                    Floor = r.Floor,
+                    Status = r.Status,
+                    CurrentOccupancy = r.Bookings
+                        .Count(b =>
                             b.Status != BookingStatusEnum.Cancelled &&
-                            b.Status != BookingStatusEnum.Completed &&  
+                            b.Status != BookingStatusEnum.Completed &&
                             b.CheckInDate < checkOut &&
                             b.CheckOutDate > checkIn
-            )
-                ).ProjectTo<RoomResponseDto>(_mapper.ConfigurationProvider)
+                        )
+                })
+                .Where(dto => dto.CurrentOccupancy < 2)
+                .OrderByDescending(r => r.CurrentOccupancy)
+                .ThenBy(r => r.Floor)
+                .ThenBy(r => r.RoomNumber)
                 .ToListAsync();
         }
     }

@@ -13,6 +13,7 @@ namespace guest_house_management_backend.Extensions
                 cfg.AddProfile<RoomMappingProfile>();
                 cfg.AddProfile<BookingMappingProfile>();
                 cfg.AddProfile<GuestMappingProfile>();
+                cfg.AddProfile<AuditLogMappingProfile>();
             });
 
             return services;

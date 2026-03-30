@@ -1,19 +1,16 @@
 ﻿using guest_house_management_backend.DTOs;
 using guest_house_management_backend.DTOs.Paging;
 using guest_house_management_backend.Repositories.RoomRepo;
-using guest_house_management_backend.Repositories.RoomTypeRepo;
 
 namespace guest_house_management_backend.Services.Room
 {
     public class RoomService: IRoomService
     {
         private readonly IRoomRepository _roomRepository;
-        private readonly IRoomTypeRepository _roomTypeRepository;
 
-        public RoomService(IRoomRepository roomRepository , IRoomTypeRepository roomTypeRepository)
+        public RoomService(IRoomRepository roomRepository)
         {
             _roomRepository = roomRepository;
-            _roomTypeRepository = roomTypeRepository;
             
         }
 
@@ -29,7 +26,7 @@ namespace guest_house_management_backend.Services.Room
             if (room == null)
                 return null;
 
-            return room.RoomStatus;
+            return room.Status;
         }
 
         public async Task<RoomsSummaryDto> GetRoomStatusSummaryAsync()
@@ -45,14 +42,11 @@ namespace guest_house_management_backend.Services.Room
             if (await _roomRepository.RoomNumberExistsAsync(roomRequest.RoomNumber))
                 throw new Exception("Room number already exists.");
 
-            var roomType = await _roomTypeRepository.GetRoomTypeByIdAsync(roomRequest.RoomTypeId);
-            if (roomType == null)
-                throw new Exception("Invalid Room Type.");
             var room = new Models.Room
             {
                 RoomNumber = roomRequest.RoomNumber,
-                RoomTypeId = roomRequest.RoomTypeId,
-                RoomStatus = Enums.RoomStatusEnum.Available,
+                Floor = roomRequest.Floor,
+                Status = Enums.RoomStatusEnum.Available,
                 CreatedAt = DateTime.UtcNow
             };
             await _roomRepository.AddAsync(room);
@@ -83,8 +77,8 @@ namespace guest_house_management_backend.Services.Room
             }
 
             existingRoom.RoomNumber = updateRoomRequest.RoomNumber;
-            existingRoom.RoomTypeId = updateRoomRequest.RoomTypeId;
-            existingRoom.RoomStatus = updateRoomRequest.RoomStatus;
+            existingRoom.Floor = updateRoomRequest.Floor;
+            existingRoom.Status = updateRoomRequest.Status;
             existingRoom.UpdatedAt = DateTime.UtcNow;
 
             await _roomRepository.UpdateRoomAsync(existingRoom);
@@ -92,9 +86,9 @@ namespace guest_house_management_backend.Services.Room
             return true;
         }
 
-        public async Task<Paging<RoomResponseDto>> getAllRoomAsync(int pageNumber , int pageSize , int roomStatus , int roomType)
+        public async Task<Paging<RoomResponseDto>> getAllRoomAsync(int pageNumber , int pageSize , int roomStatus , string roomNumber )
         {
-            return await _roomRepository.GetAllRoomsAsync(pageNumber , pageSize , roomStatus , roomType);
+            return await _roomRepository.GetAllRoomsAsync(pageNumber , pageSize , roomStatus , roomNumber);
         }
     }
 }

@@ -19,7 +19,7 @@ namespace guest_house_management_backend.Controllers
         }
 
 
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin,Ops")]
         [HttpGet("getAllBookings")]
         public async Task<ActionResult<IEnumerable<BookingResponseDto>>> GetAll([FromQuery] int pageNumber , [FromQuery] int pageSize , [FromQuery] string? searchUser , [FromQuery] string? roomNumber, [FromQuery] int statusFilter)
         {
@@ -27,7 +27,7 @@ namespace guest_house_management_backend.Controllers
         }
 
 
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin,Ops")]
         [HttpGet("getBookingById/{id}")]
         public async Task<ActionResult<BookingResponseDto>> GetByIdAsync(int id)
         {
@@ -35,7 +35,7 @@ namespace guest_house_management_backend.Controllers
         }
 
 
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin,Ops")]
         [HttpPut("updateBooking/{id}")]
         public async Task<IActionResult> Update(int id, UpdateBookingDto updateRequest)
         {
@@ -47,7 +47,7 @@ namespace guest_house_management_backend.Controllers
             });
         }
 
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin,Ops")]
         [HttpDelete("deleteBooking/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -60,7 +60,7 @@ namespace guest_house_management_backend.Controllers
         }
 
 
-        [Authorize(Roles = "Admin,Staff")]
+       [Authorize(Roles = "Admin,Ops,Guard")]
         [HttpPut("checkIn/{bookingId}")]
         public async Task<IActionResult> CheckIn(int bookingId)
         {
@@ -69,7 +69,7 @@ namespace guest_house_management_backend.Controllers
         }
 
 
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin,Ops,Guard")]
         [HttpPut("checkOut/{bookingId}")]
         public async Task<IActionResult> CheckOut(int bookingId)
         {
@@ -78,7 +78,7 @@ namespace guest_house_management_backend.Controllers
         }
 
 
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin,Ops,Guard")]
         [HttpGet("getBookingsByRange")]
         public async Task<IActionResult> fetchBookingsByRange([FromQuery] DateTime start, [FromQuery] DateTime end)
         {
@@ -87,7 +87,7 @@ namespace guest_house_management_backend.Controllers
         }
 
 
-        [Authorize]
+        [Authorize(Roles = "Admin,Ops")]
         [HttpPost("createBooking")]
         public async Task<IActionResult> CreateBooking([FromBody] CreateBookingDto createRequest)
         {
@@ -118,7 +118,7 @@ namespace guest_house_management_backend.Controllers
         }
 
 
-        [Authorize]
+        [Authorize(Roles = "Admin,Ops")]
         [HttpPost("{id}/cancelBooking")]
         public async Task<IActionResult> CancelBooking(int id)
         {

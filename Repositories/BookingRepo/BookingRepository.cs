@@ -21,11 +21,11 @@ namespace guest_house_management_backend.Repositories.BookingRepo
         }
         public async Task<Paging<BookingResponseDto>> GetAllAsync(int pageNumber , int pageSize , string searchUser , string roomNumber ,int statusFilter)
         {
-            var query = _context.Bookings.Include(b => b.Guest).Include(b => b.Room).AsQueryable();
+            var query = _context.Bookings.Include(b => b.Room).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchUser))
             {
-                query = query.Where(b => b.Guest.Email.Contains(searchUser));
+                query = query.Where(b => b.GuestEmail.Contains(searchUser));
             }
 
             if (!string.IsNullOrWhiteSpace(roomNumber))
@@ -54,13 +54,11 @@ namespace guest_house_management_backend.Repositories.BookingRepo
                 }
             };
         }
-        public async Task<BookingResponseDto?> GetByIdAsync(int id)
+        public async Task<Booking> GetByIdAsync(int id)
         {
             return await _context.Bookings
-                .Include(b => b.Guest)
                 .Include(b => b.Room)
                 .Where(b => b.Id == id)
-                .ProjectTo<BookingResponseDto>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync(b => b.Id == id);
         }
         public async Task AddAsync(Booking booking)
@@ -87,8 +85,7 @@ namespace guest_house_management_backend.Repositories.BookingRepo
         {
             return await _context.Bookings.
                     Include(b=>b.Room).
-                    ThenInclude(r=>r.RoomType).
-                    Include(b => b.Guest).FirstOrDefaultAsync(b=>b.Id == bookingId);
+                    FirstOrDefaultAsync(b=>b.Id == bookingId);
         }
 
         public async Task SaveChangesAsync()
@@ -99,7 +96,6 @@ namespace guest_house_management_backend.Repositories.BookingRepo
         public async Task<IEnumerable<RoomResponseDto>> GetAvailableRooms(RoomAvaiblityRequestDto roomAvaiblityRequest)
         {
             return await _context.Rooms
-                .Include(r => r.RoomType)
                 .Where(r =>
                     !r.Bookings
                        .Any(b =>
@@ -121,20 +117,22 @@ namespace guest_house_management_backend.Repositories.BookingRepo
             DateTime CheckOut,
             int? excludeBookingId = null)
         {
-            var res = !await _context.Bookings
-                .AnyAsync(b =>
-                    b.RoomId == roomId &&
-                    b.Status != BookingStatusEnum.Cancelled &&
-                    b.Status != BookingStatusEnum.Completed &&
-                    b.CheckOutDate > CheckIn &&
-                    b.CheckInDate < CheckOut);
+            var res = await _context.Rooms
+                .Where(r=>r.Id == roomId)
+                .AnyAsync(
+                    r=>r.Bookings.Count(b =>
+                        b.Id != excludeBookingId &&
+                        b.Status != BookingStatusEnum.Cancelled &&
+                        b.Status != BookingStatusEnum.Completed &&
+                        b.CheckInDate < CheckOut &&
+                        b.CheckOutDate > CheckIn) < 2);
 
             return res;
         }
 
         public async Task<IEnumerable<BookingResponseDto>> fetchByRange(DateTime start ,DateTime end)
         {
-            var res= await _context.Bookings.Include(b=>b.Guest)
+            var res= await _context.Bookings
                 .Include(b => b.Room)
                 .Where(
                     b =>
@@ -149,13 +147,12 @@ namespace guest_house_management_backend.Repositories.BookingRepo
         {
             return await _context.Bookings
                 .Include(b => b.Room)
-                .Include(b => b.Guest)
                 .FirstOrDefaultAsync(b => b.Id == id);
         }
 
         public async Task<Paging<BookingResponseDto>> GetUserBookings(int pageNumber, int pageSize, string guestEmail , string roomNumber , int statusFilter)
         {
-            var query =  _context.Bookings.Include(b => b.Guest).Where(b => b.Guest.Email == guestEmail).AsQueryable();
+            var query =  _context.Bookings.Where(b => b.GuestEmail == guestEmail).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(roomNumber)){
                 query = query.Where(b => b.Room.RoomNumber.Contains(roomNumber));

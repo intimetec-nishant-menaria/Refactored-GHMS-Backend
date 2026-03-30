@@ -8,13 +8,7 @@ namespace guest_house_management_backend.Mapping
     {
         public RoomMappingProfile()
         {
-            CreateMap<Room, RoomResponseDto>()
-                .ForMember(des=>des.RoomTypeName,
-                        opt=>opt.MapFrom(src=>src.RoomType.RoomTypeName))
-                .ForMember(des => des.Capacity,
-                        opt => opt.MapFrom(src => src.RoomType.Capacity))
-                .ForMember(des => des.PricePerNight,
-                        opt => opt.MapFrom(src => src.RoomType.PricePerNight));
+            CreateMap<Room, RoomResponseDto>();
         }
     }
 }

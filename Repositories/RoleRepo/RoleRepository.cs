@@ -12,7 +12,7 @@ namespace guest_house_management_backend.Repositories.RoleRepo
             _context = context;
         }
 
-        public async Task<int> GetRoleIdByNameAsync(RoleEnum roleName)
+        public async Task<int> GetRoleIdByNameAsync(string roleName)
         {
             var role = await _context.Roles
                  .FirstOrDefaultAsync(r => r.RoleName == roleName);

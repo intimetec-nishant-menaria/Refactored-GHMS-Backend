@@ -34,7 +34,7 @@ namespace guest_house_management_backend.Services.Auth
             if (user != null)
                 throw new InvalidOperationException("User with this email already exists.");
 
-            var roleId = await _roleRepository.GetRoleIdByNameAsync(RoleEnum.Guest);
+            var roleId = await _roleRepository.GetRoleIdByNameAsync(registerRequest.Role);
             User newUser = new User
             {
                 Name = registerRequest.FullName,
@@ -53,9 +53,9 @@ namespace guest_house_management_backend.Services.Auth
             {
                 throw new KeyNotFoundException("User with this email does not exist.");
             }
-            if (!VerifyUserPassword(loginRequest.Password, user.HashPassword))
+            if (!user.IsActive || !VerifyUserPassword(loginRequest.Password, user.HashPassword))
             {
-                throw new UnauthorizedAccessException("Invalid password.");
+                throw new UnauthorizedAccessException("Invalid password Or Inactive Account.");
             }
             return (CreateToken(user) , user);
         }

@@ -8,7 +8,7 @@ namespace guest_house_management_backend.Repositories.RoomRepo
     public interface IRoomRepository
     {
         Task<Room?> GetRoomByIdAsync(int id);
-        Task<Paging<RoomResponseDto>> GetAllRoomsAsync(int pageNumber , int pageSize , int roomStatus , int roomType);
+        Task<Paging<RoomResponseDto>> GetAllRoomsAsync(int pageNumber , int pageSize , int roomStatus , string roomNumber);
         Task<bool> UpdateRoomStatusAsync(int id, Enums.RoomStatusEnum status);
         Task<RoomsSummaryDto> GetRoomStatusSummaryAsync();
         Task AddAsync(Room room);

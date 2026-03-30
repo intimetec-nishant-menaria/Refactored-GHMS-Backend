@@ -15,7 +15,7 @@ namespace guest_house_management_backend.DTOs
         ErrorMessage = "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.")]
         public string Password { get; set; } = string.Empty;
         [Required(ErrorMessage = "Role is required")]
-        public RoleEnum Role { get; set; }
+        public string Role { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
     }
 }

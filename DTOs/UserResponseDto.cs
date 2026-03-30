@@ -7,7 +7,7 @@ namespace guest_house_management_backend.DTOs
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public RoleEnum Role { get; set; }
+        public string Role { get; set; } = string.Empty;
         public bool IsActive { get; set; }
         public bool IsEmailConfirmed { get; set; }
         public DateTime CreatedAt { get; set; }

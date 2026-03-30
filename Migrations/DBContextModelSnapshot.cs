@@ -22,6 +22,52 @@ namespace guest_house_management_backend.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("guest_house_management_backend.Models.AuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("BookingId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EntityId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EntityName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NewValue")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldValue")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AuditLogs");
+                });
+
             modelBuilder.Entity("guest_house_management_backend.Models.Booking", b =>
                 {
                     b.Property<int>("Id")
@@ -30,161 +76,49 @@ namespace guest_house_management_backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("BugId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CheckInDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("CheckInTime")
+                    b.Property<DateTime>("CheckInTime")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("CheckOutDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("CheckOutTime")
+                    b.Property<DateTime>("CheckOutTime")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal?>("FinalBillAmount")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<string>("GuestEmail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("GuestId")
+                    b.Property<int>("GuestGender")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsPaymentCompleted")
-                        .HasColumnType("bit");
+                    b.Property<string>("GuestName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RoomId")
                         .HasColumnType("int");
 
-                    b.Property<string>("SpecialRequests")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("price")
-                        .HasColumnType("decimal(18,2)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("GuestId");
 
                     b.HasIndex("RoomId");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("Bookings");
-                });
-
-            modelBuilder.Entity("guest_house_management_backend.Models.Guest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Contact")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("EmergencyContact")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("IDProof")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.ToTable("Guest");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Address = "Delhi",
-                            Contact = "9876543210",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "rahul@example.com",
-                            EmergencyContact = "9999999999",
-                            IDProof = "Aadhar1234",
-                            Name = "Rahul Sharma"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Address = "Mumbai",
-                            Contact = "9123456780",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "priya@example.com",
-                            EmergencyContact = "8888888888",
-                            IDProof = "Passport5678",
-                            Name = "Priya Verma"
-                        });
-                });
-
-            modelBuilder.Entity("guest_house_management_backend.Models.Payment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BookingId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("PaymentDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PaymentMethod")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("TransactionId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BookingId");
-
-                    b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("guest_house_management_backend.Models.Role", b =>
@@ -195,8 +129,10 @@ namespace guest_house_management_backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("RoleName")
-                        .HasColumnType("int");
+                    b.Property<string>("RoleName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -206,17 +142,22 @@ namespace guest_house_management_backend.Migrations
                         new
                         {
                             Id = 1,
-                            RoleName = 1
+                            RoleName = "Ops"
                         },
                         new
                         {
                             Id = 2,
-                            RoleName = 2
+                            RoleName = "HR"
                         },
                         new
                         {
                             Id = 3,
-                            RoleName = 3
+                            RoleName = "guard"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            RoleName = "Admin"
                         });
                 });
 
@@ -231,17 +172,14 @@ namespace guest_house_management_backend.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("FloorNumber")
+                    b.Property<int>("Floor")
                         .HasColumnType("int");
 
                     b.Property<string>("RoomNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RoomStatus")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RoomTypeId")
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -249,153 +187,56 @@ namespace guest_house_management_backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RoomTypeId");
-
                     b.ToTable("Rooms");
-                });
-
-            modelBuilder.Entity("guest_house_management_backend.Models.RoomAmenity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Amenities");
 
                     b.HasData(
                         new
                         {
                             Id = 1,
-                            Name = "WiFi"
+                            CreatedAt = new DateTime(2026, 3, 28, 13, 0, 27, 968, DateTimeKind.Utc).AddTicks(3467),
+                            Floor = 1,
+                            RoomNumber = "101",
+                            Status = 1
                         },
                         new
                         {
                             Id = 2,
-                            Name = "Air Conditioning"
+                            CreatedAt = new DateTime(2026, 3, 28, 13, 0, 27, 968, DateTimeKind.Utc).AddTicks(3473),
+                            Floor = 1,
+                            RoomNumber = "102",
+                            Status = 1
                         },
                         new
                         {
                             Id = 3,
-                            Name = "Television"
+                            CreatedAt = new DateTime(2026, 3, 28, 13, 0, 27, 968, DateTimeKind.Utc).AddTicks(3474),
+                            Floor = 2,
+                            RoomNumber = "201",
+                            Status = 1
                         },
                         new
                         {
                             Id = 4,
-                            Name = "Mini Bar"
-                        });
-                });
-
-            modelBuilder.Entity("guest_house_management_backend.Models.RoomType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Capacity")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("PricePerNight")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("RoomTypeName")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("RoomTypes");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Capacity = 1,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            PricePerNight = 1500m,
-                            RoomTypeName = 1
+                            CreatedAt = new DateTime(2026, 3, 28, 13, 0, 27, 968, DateTimeKind.Utc).AddTicks(3475),
+                            Floor = 2,
+                            RoomNumber = "202",
+                            Status = 1
                         },
                         new
                         {
-                            Id = 2,
-                            Capacity = 2,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            PricePerNight = 2500m,
-                            RoomTypeName = 2
+                            Id = 5,
+                            CreatedAt = new DateTime(2026, 3, 28, 13, 0, 27, 968, DateTimeKind.Utc).AddTicks(3477),
+                            Floor = 3,
+                            RoomNumber = "301",
+                            Status = 1
                         },
                         new
                         {
-                            Id = 3,
-                            Capacity = 4,
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            PricePerNight = 5000m,
-                            RoomTypeName = 3
-                        });
-                });
-
-            modelBuilder.Entity("guest_house_management_backend.Models.RoomTypeAmenity", b =>
-                {
-                    b.Property<int>("RoomTypeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("AmenityId")
-                        .HasColumnType("int");
-
-                    b.HasKey("RoomTypeId", "AmenityId");
-
-                    b.HasIndex("AmenityId");
-
-                    b.ToTable("RoomTypeAmenities");
-
-                    b.HasData(
-                        new
-                        {
-                            RoomTypeId = 1,
-                            AmenityId = 1
-                        },
-                        new
-                        {
-                            RoomTypeId = 2,
-                            AmenityId = 1
-                        },
-                        new
-                        {
-                            RoomTypeId = 2,
-                            AmenityId = 2
-                        },
-                        new
-                        {
-                            RoomTypeId = 3,
-                            AmenityId = 1
-                        },
-                        new
-                        {
-                            RoomTypeId = 3,
-                            AmenityId = 2
-                        },
-                        new
-                        {
-                            RoomTypeId = 3,
-                            AmenityId = 3
-                        },
-                        new
-                        {
-                            RoomTypeId = 3,
-                            AmenityId = 4
+                            Id = 6,
+                            CreatedAt = new DateTime(2026, 3, 28, 13, 0, 27, 968, DateTimeKind.Utc).AddTicks(3478),
+                            Floor = 4,
+                            RoomNumber = "401",
+                            Status = 1
                         });
                 });
 
@@ -421,18 +262,12 @@ namespace guest_house_management_backend.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsEmailConfirmed")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -473,68 +308,30 @@ namespace guest_house_management_backend.Migrations
                     b.ToTable("UserTokens");
                 });
 
-            modelBuilder.Entity("guest_house_management_backend.Models.Booking", b =>
+            modelBuilder.Entity("guest_house_management_backend.Models.AuditLog", b =>
                 {
-                    b.HasOne("guest_house_management_backend.Models.Guest", "Guest")
-                        .WithMany("Bookings")
-                        .HasForeignKey("GuestId")
+                    b.HasOne("guest_house_management_backend.Models.Booking", null)
+                        .WithMany("AuditLogs")
+                        .HasForeignKey("BookingId");
+
+                    b.HasOne("guest_house_management_backend.Models.User", "User")
+                        .WithMany("AuditLogs")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("guest_house_management_backend.Models.Booking", b =>
+                {
                     b.HasOne("guest_house_management_backend.Models.Room", "Room")
                         .WithMany("Bookings")
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("guest_house_management_backend.Models.User", null)
-                        .WithMany("Bookings")
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("Guest");
-
                     b.Navigation("Room");
-                });
-
-            modelBuilder.Entity("guest_house_management_backend.Models.Payment", b =>
-                {
-                    b.HasOne("guest_house_management_backend.Models.Booking", "Booking")
-                        .WithMany("Payments")
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Booking");
-                });
-
-            modelBuilder.Entity("guest_house_management_backend.Models.Room", b =>
-                {
-                    b.HasOne("guest_house_management_backend.Models.RoomType", "RoomType")
-                        .WithMany("Rooms")
-                        .HasForeignKey("RoomTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("RoomType");
-                });
-
-            modelBuilder.Entity("guest_house_management_backend.Models.RoomTypeAmenity", b =>
-                {
-                    b.HasOne("guest_house_management_backend.Models.RoomAmenity", "Amenity")
-                        .WithMany("RoomTypeAmenities")
-                        .HasForeignKey("AmenityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("guest_house_management_backend.Models.RoomType", "RoomType")
-                        .WithMany("RoomTypeAmenities")
-                        .HasForeignKey("RoomTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Amenity");
-
-                    b.Navigation("RoomType");
                 });
 
             modelBuilder.Entity("guest_house_management_backend.Models.User", b =>
@@ -551,7 +348,7 @@ namespace guest_house_management_backend.Migrations
             modelBuilder.Entity("guest_house_management_backend.Models.UserToken", b =>
                 {
                     b.HasOne("guest_house_management_backend.Models.User", "User")
-                        .WithMany("Tokens")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -561,12 +358,7 @@ namespace guest_house_management_backend.Migrations
 
             modelBuilder.Entity("guest_house_management_backend.Models.Booking", b =>
                 {
-                    b.Navigation("Payments");
-                });
-
-            modelBuilder.Entity("guest_house_management_backend.Models.Guest", b =>
-                {
-                    b.Navigation("Bookings");
+                    b.Navigation("AuditLogs");
                 });
 
             modelBuilder.Entity("guest_house_management_backend.Models.Role", b =>
@@ -579,23 +371,9 @@ namespace guest_house_management_backend.Migrations
                     b.Navigation("Bookings");
                 });
 
-            modelBuilder.Entity("guest_house_management_backend.Models.RoomAmenity", b =>
-                {
-                    b.Navigation("RoomTypeAmenities");
-                });
-
-            modelBuilder.Entity("guest_house_management_backend.Models.RoomType", b =>
-                {
-                    b.Navigation("RoomTypeAmenities");
-
-                    b.Navigation("Rooms");
-                });
-
             modelBuilder.Entity("guest_house_management_backend.Models.User", b =>
                 {
-                    b.Navigation("Bookings");
-
-                    b.Navigation("Tokens");
+                    b.Navigation("AuditLogs");
                 });
 #pragma warning restore 612, 618
         }

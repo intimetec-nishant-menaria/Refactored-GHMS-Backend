@@ -6,7 +6,7 @@ namespace guest_house_management_backend.DTOs
     public class UpdateRoomDto
     {
         public string RoomNumber { get; set; } = string.Empty;
-        public int RoomTypeId { get; set; }
-        public RoomStatusEnum RoomStatus { get; set; }
+        public int Floor { get; set; }
+        public RoomStatusEnum Status { get; set; }
     }
 }

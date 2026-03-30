@@ -13,7 +13,7 @@ namespace guest_house_management_backend.DTOs
         public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Role is required")]
-        public RoleEnum Role { get; set; }
+        public string Role { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Active status is required")]
         public bool IsActive { get; set; }

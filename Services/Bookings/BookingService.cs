@@ -1,16 +1,15 @@
-﻿using guest_house_management_backend.Data;
+﻿using AutoMapper;
+using guest_house_management_backend.Data;
 using guest_house_management_backend.DTOs;
 using guest_house_management_backend.DTOs.Paging;
 using guest_house_management_backend.Enums;
+using guest_house_management_backend.Hubs;
 using guest_house_management_backend.Models;
 using guest_house_management_backend.Repositories.BookingRepo;
-using guest_house_management_backend.Repositories.GuestRepo;
-using guest_house_management_backend.Repositories.PaymentRepo;
 using guest_house_management_backend.Repositories.RoomRepo;
 using guest_house_management_backend.Repositories.UnitOfWorkRepo;
 using guest_house_management_backend.Services.Email;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
+using Microsoft.AspNetCore.SignalR;
 
 namespace guest_house_management_backend.Services.Bookings
 {
@@ -19,20 +18,16 @@ namespace guest_house_management_backend.Services.Bookings
         private readonly IBookingRepository _repository;
         private readonly IRoomRepository _roomRepository;
         private readonly IEmailSender _emailSender;
-        private readonly IGuestRepository _guestRepositroy;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IPaymentRepository _paymentRepository;
+        private readonly IMapper _mapper;
 
-        public BookingService(IHttpContextAccessor httpContextAccessor,IGuestRepository guestRepository,IBookingRepository repository,IRoomRepository roomRepository ,DBContext context ,IEmailSender emailSender, IUnitOfWork unitOfWork , IPaymentRepository paymentRepository)
+        public BookingService(IBookingRepository repository,IRoomRepository roomRepository ,DBContext context ,IEmailSender emailSender, IUnitOfWork unitOfWork ,IMapper mapper)
         {
             _repository = repository;
             _roomRepository = roomRepository;
             _emailSender = emailSender;
-            _guestRepositroy = guestRepository;
-            _httpContextAccessor = httpContextAccessor;
             _unitOfWork = unitOfWork;
-            _paymentRepository = paymentRepository;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<RoomResponseDto>> GetAllAvailableRooms(RoomAvaiblityRequestDto roomAvaiblityRequest)
@@ -48,14 +43,15 @@ namespace guest_house_management_backend.Services.Bookings
 
         public async Task<BookingResponseDto?> GetByIdAsync(int id)
         {
-            return await _repository.GetByIdAsync(id);
+            var booking = await _repository.GetByIdAsync(id);
+            if(booking == null)
+            {
+                return null;
+            }
+            return _mapper.Map<BookingResponseDto>(booking);
         }
         public async Task CreateAsync(CreateBookingDto createRequest)
         {
-            var user = _httpContextAccessor.HttpContext?.User;
-            var emailFromJwt = user?.FindFirst(ClaimTypes.Email)?.Value;
-            var nameFromJwt = user?.FindFirst(ClaimTypes.Name)?.Value;
-
             await _unitOfWork.BeginTransactionAsync();
             try
             {
@@ -73,47 +69,26 @@ namespace guest_house_management_backend.Services.Bookings
                 {
                     throw new KeyNotFoundException("Room not found");
                 }
-                var totalPrice = CalculatePrice(room, createRequest.CheckInDate, createRequest.CheckOutDate);
-                var guest = await _guestRepositroy.GetByEmailAsync(createRequest.GuestEmail);
-                if (guest == null)
-                {
-                    guest = new guest_house_management_backend.Models.Guest
-                    {
-                        Name = nameFromJwt,
-                        Email = emailFromJwt,
-                        CreatedAt = DateTime.UtcNow,
-                    };
-                    await _guestRepositroy.AddAsync(guest);
-                }
                 var booking = new Booking
                 {
-                    GuestId = guest.Id,
+                    BugId = createRequest.BugId,
                     RoomId = createRequest.RoomId,
+                    GuestName = createRequest.GuestName,
+                    GuestEmail =createRequest.GuestEmail,
+                    GuestGender = createRequest.Gender,
                     CheckInDate = createRequest.CheckInDate,
                     CheckOutDate = createRequest.CheckOutDate,
                     Status = Enums.BookingStatusEnum.Booked,
-                    price = totalPrice,
-                    SpecialRequests = createRequest.SpecialRequests
                 };
                 await _repository.AddAsync(booking);
-                await _repository.SaveChangesAsync();
-                await _paymentRepository.createpayment(new Payment
-                {
-                    BookingId = booking.Id,
-                    TotalAmount = totalPrice,
-                    Status = Enums.PaymentStatusEnum.Pending,
-                    PaymentDate = DateTime.UtcNow,
-
-                });
-                await _repository.SaveChangesAsync();
-                await _unitOfWork.CommitAsync();
+                await _unitOfWork.SaveChangesAsync();
 
                 await _emailSender.SendEmailASync(
-                guest.Email!,
+                createRequest.GuestEmail!,
                 "Booking Confirmed - Guest House Management",
                 $"""
                 <h3>Booking Confirmed!</h3>
-                <p>Dear {guest.Name},</p>
+                <p>Dear {createRequest.GuestName},</p>
                 <p>We are excited to inform you that your booking with ID <strong>{booking.Id}</strong> has been confirmed.</p>
                 <p><strong>Booking Details:</strong></p>
                 <ul>
@@ -128,6 +103,7 @@ namespace guest_house_management_backend.Services.Bookings
                 <p>We look forward to hosting you!</p>
                 <p>Best Regards,<br/>Management Team</p>
                 """);
+                await _unitOfWork.CommitAsync();
             }
             catch
             {
@@ -136,7 +112,7 @@ namespace guest_house_management_backend.Services.Bookings
             }
         }
 
-        public async Task<BookingResponseDto> UpdateAsync(int id, UpdateBookingDto updateRequest)
+        public async Task UpdateAsync(int id, UpdateBookingDto updateRequest)
         {
             await _unitOfWork.BeginTransactionAsync();
 
@@ -156,32 +132,16 @@ namespace guest_house_management_backend.Services.Bookings
                 if (!isAvailable)
                     throw new InvalidOperationException("Room not available for selected dates.");
 
+                booking.BugId = updateRequest.BugId;
+                booking.GuestEmail = updateRequest.GuestEmail;
+                booking.GuestName = updateRequest.GuestName;
+                booking.RoomId = updateRequest.RoomId;
+                booking.GuestGender = updateRequest.Gender;
                 booking.CheckInDate = updateRequest.CheckInDate;
                 booking.CheckOutDate = updateRequest.CheckOutDate;
-                booking.Status = updateRequest.Status;
-                booking.SpecialRequests = updateRequest.SpecialRequests;
 
-                if(booking.Status == BookingStatusEnum.CheckedIn)
-                {
-                   await  _roomRepository.UpdateRoomStatusAsync(booking.RoomId, Enums.RoomStatusEnum.Occupied);
-                }else if(booking.Status == BookingStatusEnum.Completed)
-                {
-                    await _roomRepository.UpdateRoomStatusAsync(booking.RoomId, Enums.RoomStatusEnum.Available);
-                }
-
-                await _repository.SaveChangesAsync();
+                await _repository.UpdateBookingAsync(booking);
                 await _unitOfWork.CommitAsync();
-
-                return new BookingResponseDto
-                {
-                    Id = booking.Id,
-                    GuestId = booking.GuestId,
-                    GuestName = booking.GuestName,
-                    RoomNumber = booking.RoomNumber,
-                    CheckInDate = booking.CheckInDate,
-                    CheckOutDate = booking.CheckOutDate,
-                    Status = booking.Status,
-                };
             }
             catch
             {
@@ -209,16 +169,12 @@ namespace guest_house_management_backend.Services.Bookings
             booking.Status = BookingStatusEnum.Cancelled;
             await _repository.UpdateBookingAsync(booking);
 
-            var guest = await _guestRepositroy.GetByIdAsync(booking.GuestId);
-            if (guest == null)
-                throw new KeyNotFoundException("User not found");
-
             await _emailSender.SendEmailASync(
-                guest.Email,
+                booking.GuestEmail,
                 "Booking Cancelled",
                 $"""
                 <h3>Booking Cancelled</h3>
-                <p>Dear {guest.Name},</p>
+                <p>Dear {booking.GuestName},</p>
                 <p>Your booking with ID <strong>{booking.Id}</strong> has been cancelled successfully.</p>
                 <p>Booking Details:</p>
                 <ul>
@@ -236,12 +192,6 @@ namespace guest_house_management_backend.Services.Bookings
         public async Task<IEnumerable<BookingResponseDto>> GetBookingsByRange(DateTime start, DateTime end)
         {
             return await _repository.fetchByRange(start, end);
-        }
-
-        private decimal CalculatePrice(Models.Room room, DateTime checkIn, DateTime checkOut)
-        {
-            var days = (checkOut - checkIn).Days;
-            return days * room.RoomType.PricePerNight;
         }
 
         public async Task<Paging<BookingResponseDto>> GetUserBookingsAsync(int pageNumber, int pageSize, string guestEmail , string roomNumber , int statusFilter)

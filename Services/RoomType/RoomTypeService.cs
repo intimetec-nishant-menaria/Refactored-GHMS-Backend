@@ -1,53 +1,53 @@
-﻿using guest_house_management_backend.DTOs;
-using guest_house_management_backend.Repositories.RoomTypeRepo;
+﻿//using guest_house_management_backend.DTOs;
+//using guest_house_management_backend.Repositories.RoomTypeRepo;
 
-namespace guest_house_management_backend.Services.RoomType
-{
-    public class RoomTypeService : IRoomTypeService
-    {
-        private readonly IRoomTypeRepository _repository;
+//namespace guest_house_management_backend.Services.RoomType
+//{
+//    public class RoomTypeService : IRoomTypeService
+//    {
+//        private readonly IRoomTypeRepository _repository;
 
-        public RoomTypeService(IRoomTypeRepository repository)
-        {
-            _repository = repository;
-        }
+//        public RoomTypeService(IRoomTypeRepository repository)
+//        {
+//            _repository = repository;
+//        }
 
-        public async Task<List<RoomTypeResponseDto>> GetAllAsync()
-        {
-            var roomTypes = await _repository.GetAllRoomTypeAsync();
+//        public async Task<List<RoomTypeResponseDto>> GetAllAsync()
+//        {
+//            var roomTypes = await _repository.GetAllRoomTypeAsync();
 
-            return roomTypes.Select(rt => new RoomTypeResponseDto
-            {
-                Id = rt.Id,
-                RoomTypeName = rt.RoomTypeName.ToString(),
-                Capacity = rt.Capacity,
-                PricePerNight = rt.PricePerNight,
-                Amenities = rt.RoomTypeAmenities.Select(a => a.Amenity!.Name).ToList()
-            }).ToList();
-        }
+//            return roomTypes.Select(rt => new RoomTypeResponseDto
+//            {
+//                Id = rt.Id,
+//                RoomTypeName = rt.RoomTypeName.ToString(),
+//                Capacity = rt.Capacity,
+//                PricePerNight = rt.PricePerNight,
+//                Amenities = rt.RoomTypeAmenities.Select(a => a.Amenity!.Name).ToList()
+//            }).ToList();
+//        }
 
-        public async Task<RoomTypeResponseDto> GetByIdAsync(int id)
-        {
-            var rt = await _repository.GetRoomTypeByIdAsync(id);
+//        public async Task<RoomTypeResponseDto> GetByIdAsync(int id)
+//        {
+//            var rt = await _repository.GetRoomTypeByIdAsync(id);
 
-            if (rt == null)
-                return null;
+//            if (rt == null)
+//                return null;
 
-            return new RoomTypeResponseDto
-            {
-                Id = rt.Id,
-                RoomTypeName = rt.RoomTypeName.ToString(),
-                Capacity = rt.Capacity,
-                PricePerNight = rt.PricePerNight,
-                Amenities = rt.RoomTypeAmenities
-                    .Select(a => a.Amenity!.Name)
-                    .ToList()
-            };
-        }
+//            return new RoomTypeResponseDto
+//            {
+//                Id = rt.Id,
+//                RoomTypeName = rt.RoomTypeName.ToString(),
+//                Capacity = rt.Capacity,
+//                PricePerNight = rt.PricePerNight,
+//                Amenities = rt.RoomTypeAmenities
+//                    .Select(a => a.Amenity!.Name)
+//                    .ToList()
+//            };
+//        }
 
-        public async Task<IEnumerable<AmenitiesResponseDto>> GetAllAminities()
-        {
-            return await _repository.GetAllAminities();
-        }
-    }
-}
+//        public async Task<IEnumerable<AmenitiesResponseDto>> GetAllAminities()
+//        {
+//            return await _repository.GetAllAminities();
+//        }
+//    }
+//}

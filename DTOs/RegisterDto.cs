@@ -13,5 +13,6 @@ namespace guest_house_management_backend.DTOs
         @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$",
         ErrorMessage = "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.")]
         public string Password {  get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
     }
 }

@@ -8,7 +8,7 @@ namespace guest_house_management_backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles ="Admin")]
+    [Authorize(Roles ="Admin,Ops")]
     public class UserManagementController : ControllerBase
     {
         private readonly IUserManagementService _userManagementService;
@@ -47,9 +47,9 @@ namespace guest_house_management_backend.Controllers
                 var users = await _userManagementService.GetAllUsersAsync(pageNumber , pageSize , searchUser);
                 return users;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Something went wrong." });
+                return StatusCode(500, new { message = ex.Message });
             }
         }
 
