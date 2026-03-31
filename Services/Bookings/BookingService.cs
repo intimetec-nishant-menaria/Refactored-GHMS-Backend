@@ -20,14 +20,16 @@ namespace guest_house_management_backend.Services.Bookings
         private readonly IEmailSender _emailSender;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IHubContext<BookingHub> _hubContext;
 
-        public BookingService(IBookingRepository repository,IRoomRepository roomRepository ,DBContext context ,IEmailSender emailSender, IUnitOfWork unitOfWork ,IMapper mapper)
+        public BookingService(IHubContext<BookingHub> hubContext,IBookingRepository repository,IRoomRepository roomRepository ,DBContext context ,IEmailSender emailSender, IUnitOfWork unitOfWork ,IMapper mapper)
         {
             _repository = repository;
             _roomRepository = roomRepository;
             _emailSender = emailSender;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _hubContext = hubContext;
         }
 
         public async Task<IEnumerable<RoomResponseDto>> GetAllAvailableRooms(RoomAvaiblityRequestDto roomAvaiblityRequest)
@@ -104,6 +106,7 @@ namespace guest_house_management_backend.Services.Bookings
                 <p>Best Regards,<br/>Management Team</p>
                 """);
                 await _unitOfWork.CommitAsync();
+                await _hubContext.Clients.All.SendAsync("ReceiveBookingUpdate",  _mapper.Map<BookingResponseDto>(booking));  
             }
             catch
             {
@@ -142,9 +145,10 @@ namespace guest_house_management_backend.Services.Bookings
 
                 await _repository.UpdateBookingAsync(booking);
                 await _unitOfWork.CommitAsync();
+                await _hubContext.Clients.All.SendAsync("ReceiveBookingUpdate", _mapper.Map<BookingResponseDto>(booking));
             }
             catch
-            {
+            {   
                 await _unitOfWork.RollbackAsync();
                 throw;
             }

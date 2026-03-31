@@ -1,7 +1,10 @@
-﻿using guest_house_management_backend.Data;
+﻿using AutoMapper;
+using guest_house_management_backend.Data;
 using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Enums;
+using guest_house_management_backend.Hubs;
 using guest_house_management_backend.Repositories.BookingRepo;
+using Microsoft.AspNetCore.SignalR;
 
 namespace guest_house_management_backend.Services.Bookings
 {
@@ -9,10 +12,15 @@ namespace guest_house_management_backend.Services.Bookings
     {
         private readonly DBContext _context;
         private readonly IBookingRepository _bookingRepository;
-        public BookingCheckInOutService(DBContext context, IBookingRepository bookingRepository)
+        private readonly IHubContext<BookingHub> _hubContext;
+        private readonly IMapper _mapper;
+
+        public BookingCheckInOutService(IHubContext<BookingHub> hubContext,IMapper mapper,DBContext context, IBookingRepository bookingRepository)
         {
             _context = context;
             _bookingRepository = bookingRepository;
+            _hubContext = hubContext;
+            _mapper = mapper;
         }
         public async Task<CheckInResponseDto> CheckInAsync(int bookingID)
         {
@@ -41,6 +49,7 @@ namespace guest_house_management_backend.Services.Bookings
 
                 await _bookingRepository.SaveChangesAsync();
                 await transaction.CommitAsync();
+                await _hubContext.Clients.All.SendAsync("ReceiveBookingUpdate", _mapper.Map<BookingResponseDto>(booking));
 
                 return new CheckInResponseDto
                 {
@@ -85,6 +94,7 @@ namespace guest_house_management_backend.Services.Bookings
 
                 await _bookingRepository.SaveChangesAsync();
                 await transaction.CommitAsync();
+                await _hubContext.Clients.All.SendAsync("ReceiveBookingUpdate", _mapper.Map<BookingResponseDto>(booking));
 
                 return new CheckOutResponseDto
                 {

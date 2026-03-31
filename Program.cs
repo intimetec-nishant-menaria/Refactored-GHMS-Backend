@@ -1,7 +1,8 @@
 using guest_house_management_backend.Data;
 using guest_house_management_backend.Extensions;
-using Microsoft.EntityFrameworkCore;
+using guest_house_management_backend.Hubs;
 using guest_house_management_backend.Middleware;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAutoMapperExtension();
+builder.Services.AddSignalR();
 builder.Services.AddApplicationServices();
 builder.Services.AddApplicationRepository();
 
@@ -47,6 +49,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapHub<BookingHub>("/api/hubs/bookings");
 app.MapControllers();
 
 app.Run();

@@ -57,7 +57,16 @@ namespace guest_house_management_backend.Controllers
                 Response.Cookies.Append("jwtToken", res.token, cookieOptions);
                 return Ok(new
                 {
-                    message = "Login successful"
+                    message = "Login successful",
+                    user = new UserResponseDto
+                    {
+                        Id = res.user.Id,
+                        Name = res.user.Name,
+                        Email = res.user.Email,
+                        Role = res.user.Role.RoleName,
+                        IsActive = res.user.IsActive,
+                        CreatedAt = res.user.CreatedAt
+                    }
                 });
             }
             catch(UnauthorizedAccessException ex)

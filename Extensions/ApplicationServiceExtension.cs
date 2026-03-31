@@ -14,6 +14,7 @@ namespace guest_house_management_backend.Extensions
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IAuditLog, AuditLog>();
             services.AddScoped<IUserManagementService, UserManagementService>();
             services.AddScoped<IRoomService, RoomService>();
             //services.AddScoped<IRoomTypeService, RoomTypeService>();
@@ -23,7 +24,6 @@ namespace guest_house_management_backend.Extensions
             services.AddScoped<IAvailRoomService, AvailRoomService>();
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddScoped<ICurrentUser,CurrentUser>();
-            services.AddScoped<IAuditLog, AuditLog>();
 
             return services;
         }
