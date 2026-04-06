@@ -43,6 +43,11 @@ namespace guest_house_management_backend.Services.Bookings
                     throw new Exception("Room is not available!");
                 }
 
+                if(booking.CheckInDate.Date > DateTime.Now.Date)
+                {
+                    throw new Exception("Check-in allowed only on booking date");
+                }
+
                 booking.Status = BookingStatusEnum.CheckedIn;
                 booking.CheckInTime = DateTime.UtcNow;
                 booking.Room.Status = RoomStatusEnum.Occupied;
@@ -82,6 +87,11 @@ namespace guest_house_management_backend.Services.Bookings
                 if (booking.Status != BookingStatusEnum.CheckedIn)
                 {
                     throw new Exception("Only checked-in bookings can be checked out!");
+                }
+
+                if (DateTime.UtcNow.Date < booking.CheckOutDate.Date)
+                {
+                    throw new InvalidOperationException("Check-out date has not arrived yet");
                 }
 
                 var actualCheckOutTime = DateTime.UtcNow;

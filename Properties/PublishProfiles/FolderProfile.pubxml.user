@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://go.microsoft.com/fwlink/?LinkID=208121. -->
+<Project>
+  <PropertyGroup>
+    <_PublishTargetUrl>C:\cprogramming\test\guest-house-management-backend\bin\Release\net8.0\publish\</_PublishTargetUrl>
+    <History>True|2026-04-02T04:48:35.0566765Z||;True|2026-04-02T10:14:54.5738254+05:30||;True|2026-04-02T10:03:40.5242801+05:30||;True|2026-04-02T10:01:35.1330541+05:30||;True|2026-04-02T09:41:52.3134626+05:30||;True|2026-04-01T15:11:24.7418223+05:30||;True|2026-04-01T11:09:02.4714558+05:30||;True|2026-04-01T10:12:47.3878064+05:30||;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+</Project>
