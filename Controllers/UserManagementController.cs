@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace guest_house_management_backend.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/User")]
     [ApiController]
     [Authorize(Roles ="Admin,Ops")]
     public class UserManagementController : ControllerBase
@@ -17,7 +17,7 @@ namespace guest_house_management_backend.Controllers
             _userManagementService = userManagementService;
         }
 
-        [HttpPost("createUser")]
+        [HttpPost]
         public async Task<IActionResult> CreateUser(CreateUserDto createUserDto)
         {
             try
@@ -39,7 +39,7 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
-        [HttpGet("getAllUsers")]
+        [HttpGet]
         public async Task<ActionResult<Paging<UserResponseDto>>> GetAllUsers([FromQuery] int pageNumber , [FromQuery] int pageSize , [FromQuery] string? searchUser)
         {
             try
@@ -53,25 +53,7 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
-        [HttpGet("getUserById/{id}")]
-        public async Task<IActionResult> GetUserById(int id)
-        {
-            try
-            {
-                var user = await _userManagementService.GetUserByIdAsync(id);
-                return Ok(user);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Something went wrong." });
-            }
-        }
-
-        [HttpDelete("{id}/deleteUser")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             try
@@ -89,7 +71,7 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
-        [HttpPut("{id}/updateUser")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, UpdateUserDto updateUserDto)
         {
             try

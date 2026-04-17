@@ -20,7 +20,7 @@ namespace guest_house_management_backend.Controllers
 
 
         [Authorize(Roles = "Admin,Ops")]
-        [HttpGet("getAllBookings")]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<BookingResponseDto>>> GetAll([FromQuery] int pageNumber , [FromQuery] int pageSize , [FromQuery] string? searchUser , [FromQuery] string? roomNumber, [FromQuery] int statusFilter)
         {
             return Ok(await _service.GetAllAsync(pageNumber, pageSize, searchUser, roomNumber, statusFilter));
@@ -28,7 +28,7 @@ namespace guest_house_management_backend.Controllers
 
 
         [Authorize(Roles = "Admin,Ops")]
-        [HttpGet("getBookingById/{id}")]
+        [HttpGet("{id}")]
         public async Task<ActionResult<BookingResponseDto>> GetByIdAsync(int id)
         {
             return Ok(await _service.GetByIdAsync(id));
@@ -36,7 +36,7 @@ namespace guest_house_management_backend.Controllers
 
 
         [Authorize(Roles = "Admin,Ops")]
-        [HttpPut("updateBooking/{id}")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, UpdateBookingDto updateRequest)
         {
             await _service.UpdateAsync(id, updateRequest);
@@ -48,7 +48,7 @@ namespace guest_house_management_backend.Controllers
         }
 
         [Authorize(Roles = "Admin,Ops")]
-        [HttpDelete("deleteBooking/{id}")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             await _service.DeleteAsync(id);
@@ -61,7 +61,7 @@ namespace guest_house_management_backend.Controllers
 
 
        [Authorize(Roles = "Admin,Ops,Guard")]
-        [HttpPut("checkIn/{bookingId}")]
+        [HttpPut("{bookingId}/checkIn")]
         public async Task<IActionResult> CheckIn(int bookingId)
         {
             var checkIn = await _bookingService.CheckInAsync(bookingId);
@@ -70,7 +70,7 @@ namespace guest_house_management_backend.Controllers
 
 
         [Authorize(Roles = "Admin,Ops,Guard")]
-        [HttpPut("checkOut/{bookingId}")]
+        [HttpPut("{bookingId}/checkOut/")]
         public async Task<IActionResult> CheckOut(int bookingId)
         {
             var checkOut = await _bookingService.CheckOutAsync(bookingId);
@@ -88,7 +88,7 @@ namespace guest_house_management_backend.Controllers
 
 
         [Authorize(Roles = "Admin,Ops")]
-        [HttpPost("createBooking")]
+        [HttpPost]
         public async Task<IActionResult> CreateBooking([FromBody] CreateBookingDto createRequest)
         {
             if (!ModelState.IsValid)
@@ -119,7 +119,7 @@ namespace guest_house_management_backend.Controllers
 
 
         [Authorize(Roles = "Admin,Ops")]
-        [HttpPost("{id}/cancelBooking")]
+        [HttpPost("{id}/cancel")]
         public async Task<IActionResult> CancelBooking(int id)
         {
             try

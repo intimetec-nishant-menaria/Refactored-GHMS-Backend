@@ -30,7 +30,9 @@ namespace guest_house_management_backend.Repositories.UserRepo
 
         public async Task<User?> GetByIdAsync(int id)
         {
-            return await _context.Users.FindAsync(id);
+            return await _context.Users
+                    .Include(u => u.Role)   
+                    .FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task<Paging<UserResponseDto>> GetAllAsync(int pageNumber , int pageSize , string searchUser)

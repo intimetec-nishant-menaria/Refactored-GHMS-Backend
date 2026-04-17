@@ -1,10 +1,12 @@
-﻿using guest_house_management_backend.DTOs;
+﻿using AutoMapper;
+using guest_house_management_backend.DTOs;
 using guest_house_management_backend.Enums;
 using guest_house_management_backend.Models;
 using guest_house_management_backend.Repositories.RoleRepo;
 using guest_house_management_backend.Repositories.UserRepo;
 using guest_house_management_backend.Repositories.UserTokenRepo;
 using guest_house_management_backend.Services.Email;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -19,13 +21,18 @@ namespace guest_house_management_backend.Services.Auth
         private readonly IConfiguration _configuration;
         private readonly IEmailSender _emailSender;
         private readonly IUserTokenRepository _userTokenRepository;
-        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IConfiguration configuration, IEmailSender emailSender, IUserTokenRepository userTokenRepository)
+        private readonly IDistributedCache _distributedCache;
+        private readonly IMapper _mapper;
+
+        public AuthService(IUserRepository userRepository,IMapper mapper, IRoleRepository roleRepository, IConfiguration configuration, IEmailSender emailSender, IUserTokenRepository userTokenRepository, IDistributedCache distributedCache)
         {
             _userRepository = userRepository;
             _roleRepository = roleRepository;
             _configuration = configuration;
             _emailSender = emailSender;
             _userTokenRepository = userTokenRepository;
+            _distributedCache = distributedCache;
+            _mapper = mapper;
         }
 
         public async Task RegisterUserAsync(RegisterDto registerRequest)
@@ -45,7 +52,34 @@ namespace guest_house_management_backend.Services.Auth
             await _userRepository.AddUserAsync(newUser);
         }
 
-        public async Task<(string? token , User user)> LoginUserAsync(LoginDto loginRequest)
+        public async Task<(string? accessToken , UserResponseDto? user )> AccessTokenAsync(string refreshToken)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(refreshToken);
+            var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return (null , null);
+            }
+            var savedToken = await _distributedCache.GetStringAsync($"refresh_{userId}");
+
+            if (savedToken == null || savedToken != refreshToken)
+            {
+                return (null , null);
+            }
+
+            var user = await _userRepository.GetByIdAsync(int.Parse(userId));
+            if (user == null || !user.IsActive)
+            {
+                return (null , null);
+            }
+
+            var accessToken = CreateAccessToken(_mapper.Map<UserResponseDto>(user));
+            return (accessToken , _mapper.Map<UserResponseDto>(user));
+
+        }
+
+        public async Task<(string accessToken, string refreshToken , User user)> LoginUserAsync(LoginDto loginRequest)
         {
             var user = await _userRepository.GetUserByEmailAsync(loginRequest.Email.ToLower());
 
@@ -57,7 +91,19 @@ namespace guest_house_management_backend.Services.Auth
             {
                 throw new UnauthorizedAccessException("Invalid password Or Inactive Account.");
             }
-            return (CreateToken(user) , user);
+            var userResponce = _mapper.Map<UserResponseDto>(user);
+
+            var accessToken = CreateAccessToken(userResponce);
+            var refreshToken = CreateRefreshToken(userResponce);
+
+            var cacheOptions = new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(10)
+            };
+
+            await _distributedCache.SetStringAsync($"refresh_{user.Id}", refreshToken, cacheOptions);
+           
+            return (accessToken , refreshToken , user);
         }
 
         private bool VerifyUserPassword(string password, string hashPassword)
@@ -65,18 +111,15 @@ namespace guest_house_management_backend.Services.Auth
             return BCrypt.Net.BCrypt.Verify(password, hashPassword);
         }
 
-        private string CreateToken(User user)
+        private string CreateRefreshToken(UserResponseDto user)
         {
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier , user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Name),
-                new Claim(ClaimTypes.Email , user.Email),
-                new Claim(ClaimTypes.Role ,user.Role.RoleName.ToString()),
-                new Claim("isActive" ,user.IsActive.ToString())
+                new Claim(ClaimTypes.Role ,user.Role.ToString()),
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]!));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:RefreshSecret"]!));
 
             var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -84,7 +127,33 @@ namespace guest_house_management_backend.Services.Auth
                     issuer: _configuration["JWT:ValidIssuer"],
                     audience: _configuration["JWT:ValidAudience"],
                     claims: claims,
-                    expires: DateTime.UtcNow.AddDays(5),
+                    expires: DateTime.UtcNow.AddDays(15),
+                    signingCredentials: cred
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        private string CreateAccessToken(UserResponseDto user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier , user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Name),
+                new Claim(ClaimTypes.Email , user.Email),
+                new Claim(ClaimTypes.Role ,user.Role.ToString()),
+                new Claim("isActive" ,user.IsActive.ToString())
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:AccessSecret"]!));
+
+            var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                    issuer: _configuration["JWT:ValidIssuer"],
+                    audience: _configuration["JWT:ValidAudience"],
+                    claims: claims,
+                    expires: DateTime.UtcNow.AddMinutes(15),
                     signingCredentials: cred
             );
 

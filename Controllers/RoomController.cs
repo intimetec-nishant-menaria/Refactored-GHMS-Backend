@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace guest_house_management_backend.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    [Authorize(Roles = "Admin")]
+    [Route("api/Room")]
+    [Authorize(Roles = "Admin,Ops")]
     public class RoomsController : ControllerBase
     {
         private readonly IRoomService _roomService;
@@ -17,50 +17,7 @@ namespace guest_house_management_backend.Controllers
             _roomService = roomService;
         }
 
-        [HttpPut("updateRoomStatus/{id}")]
-        public async Task<IActionResult> UpdateRoomStatus(int id, UpdateRoomStatusDto UpdateRequest)
-        {
-            try
-            {
-                var updated = await _roomService.UpdateRoomStatusAsync(id, UpdateRequest.Status);
-                if (!updated)
-                    return NotFound(new { message = "Room not found" });
-
-                return Ok(new { message = "Room status updated successfully" });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    message = "Internal Server Error",
-                    error = ex.Message
-                });
-            }
-        }
-
-        [HttpGet("getRoomStatus/{id}")]
-        public async Task<IActionResult> GetRoomStatus(int id)
-        {
-            try
-            {
-                var status = await _roomService.GetRoomStatusAsync(id);
-
-                if (status == null)
-                    return NotFound(new { message = "Room not found" });
-
-                return Ok(new { status });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    message = "Internal Server Error",
-                    error = ex.Message
-                });
-            }
-        }
-
-        [HttpGet("getSummary")]
+        [HttpGet("summary")]
         public async Task<ActionResult<RoomsSummaryDto>> GetStatusSummary()
         {
             try
@@ -78,7 +35,25 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
-        [HttpDelete("deleteRoom/{id}")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<RoomResponseDto>>> GetAllRoomsAsync([FromQuery] int pageNumber, [FromQuery] int pageSize, [FromQuery] int roomStatus, [FromQuery] string? roomNumber)
+        {
+            try
+            {
+                var rooms = await _roomService.getAllRoomAsync(pageNumber, pageSize, roomStatus, roomNumber);
+                return Ok(rooms);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = ex.Message,
+                });
+            }
+        }
+
+
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRoomAsync(int id) 
         {
             try
@@ -100,7 +75,7 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
-        [HttpPut("updateRoom/{id}")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateRoomAsync(int id,UpdateRoomDto updateRoomRequest)
         {
             try
@@ -123,7 +98,7 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
-        [HttpPost("createRoom")]
+        [HttpPost]
         public async Task<IActionResult> CreateRoomAsync(CreateRoomDto createRoomRequest)
         {
             try
@@ -139,21 +114,5 @@ namespace guest_house_management_backend.Controllers
                 });
             }
         }
-        [HttpGet("getAllRooms")]
-        public async Task<ActionResult<IEnumerable<RoomResponseDto>>> GetAllRoomsAsync([FromQuery] int pageNumber , [FromQuery] int pageSize , [FromQuery] int roomStatus, [FromQuery] string? roomNumber )
-        {
-            try
-            {
-                var rooms = await _roomService.getAllRoomAsync(pageNumber , pageSize , roomStatus , roomNumber );
-                return Ok(rooms);
-            }catch(Exception ex)
-            {
-                return StatusCode(500,new 
-                {
-                    message = ex.Message,
-                });
-            }
-        }
-        
     }
 }

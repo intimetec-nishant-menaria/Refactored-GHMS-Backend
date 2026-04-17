@@ -2,6 +2,8 @@
 using guest_house_management_backend.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace guest_house_management_backend.Controllers
@@ -11,31 +13,42 @@ namespace guest_house_management_backend.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        public AuthController(IAuthService authService)
+        private readonly IDistributedCache _distributedCache;
+
+        public AuthController(IAuthService authService , IDistributedCache distributedCache)
         {
             _authService = authService;
+            _distributedCache = distributedCache;
         }
 
-        [Authorize]
-        [HttpGet]
-        [Route("getUserDetails")]
-        public IActionResult GetMe()
+        [HttpPost("refresh")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RefreshToken()
         {
-            var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var name = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
-            var email = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value;
-            var role = HttpContext.User.FindFirst(ClaimTypes.Role)?.Value;
-            var isActive = HttpContext.User.FindFirst("isActive")?.Value;
+            var refreshToken = Request.Cookies["refreshToken"];
 
-            return Ok(new
+            if (string.IsNullOrEmpty(refreshToken))
             {
-                Id =userId,
-                Name = name,
-                Email = email,
-                Role = role,
-                IsActive = isActive
-            });
+                return Unauthorized(new { message = "No refresh token provided." });
+            }
+
+            try
+            {
+                var (newAccessToken , userDetails ) = await _authService.AccessTokenAsync( refreshToken);
+
+                if (newAccessToken == null ||  userDetails == null)
+                {
+                    return Unauthorized(new { message = "Invalid session" });
+                }
+
+                return Ok(new { accessToken = newAccessToken , user = userDetails });
+            }
+            catch(Exception)
+            {
+                return Unauthorized(new { message = "Token refresh failed." });
+            }
         }
+
 
         [HttpPost]
         [Route("login")]
@@ -43,29 +56,31 @@ namespace guest_house_management_backend.Controllers
         {
             try
             {
-                var res = await _authService.LoginUserAsync(loginRequest);
-                if (res.token == null)
+                var ( accessToken , refreshToken , user) = await _authService.LoginUserAsync(loginRequest);
+                if (accessToken == null || refreshToken==null)
                     return Unauthorized("Invalid Credentials");
+
                 var cookieOptions = new CookieOptions
                 {
-                    HttpOnly = false,
+                    HttpOnly = true,
                     Secure = true,
                     SameSite = SameSiteMode.None,
-                    Expires = DateTime.UtcNow.AddDays(5),
+                    Expires = DateTime.UtcNow.AddDays(10),
                     Path = "/"
                 };
-                Response.Cookies.Append("jwtToken", res.token, cookieOptions);
+                Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
                 return Ok(new
                 {
                     message = "Login successful",
+                    token = accessToken,
                     user = new UserResponseDto
                     {
-                        Id = res.user.Id,
-                        Name = res.user.Name,
-                        Email = res.user.Email,
-                        Role = res.user.Role.RoleName,
-                        IsActive = res.user.IsActive,
-                        CreatedAt = res.user.CreatedAt
+                        Id = user.Id,
+                        Name = user.Name,
+                        Email = user.Email,
+                        Role = user.Role.RoleName,
+                        IsActive = user.IsActive,
+                        CreatedAt = user.CreatedAt
                     }
                 });
             }
@@ -97,13 +112,26 @@ namespace guest_house_management_backend.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("logout")]
-        public IActionResult Logout()
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
             try
             {
-                Response.Cookies.Delete("jwtToken");
+                Response.Cookies.Delete("accessToken");
+                Response.Cookies.Delete("refreshToken", new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.None 
+                });
+
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    await _distributedCache.RemoveAsync($"refresh_{userId}");
+                }
+
                 return Ok(new { message = "Logged out successfully" });
             }
             catch (Exception ex)

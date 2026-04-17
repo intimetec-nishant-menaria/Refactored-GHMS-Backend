@@ -4,8 +4,8 @@ using guest_house_management_backend.Hubs;
 using guest_house_management_backend.Middleware;
 using Microsoft.EntityFrameworkCore;
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var builder = WebApplication.CreateBuilder(args);
-
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -17,9 +17,15 @@ builder.Services.AddSignalR();
 builder.Services.AddApplicationServices();
 builder.Services.AddApplicationRepository();
 
+builder.Services.AddStackExchangeRedisCache(opt =>
+{
+    opt.Configuration = builder.Configuration.GetConnectionString("Valkey");
+    opt.InstanceName = "GHMS";
+});
+
 builder.Services.AddDbContext<DBContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Default"));
 });
 
 builder.Services.AddCors(options =>

@@ -5,7 +5,9 @@ namespace guest_house_management_backend.Services.Auth
 {
     public interface IAuthService
     {
-        public Task<(string? token , User user)> LoginUserAsync(LoginDto loginRequest);
+        public Task<(string accessToken , string refreshToken , User user)> LoginUserAsync(LoginDto loginRequest);
+
+        public Task<(string? accessToken , UserResponseDto? user )> AccessTokenAsync(string refreshToken);
         public Task RegisterUserAsync(RegisterDto registerRequest);
         public Task<(bool Success , string Message)> ChangeUserPassword(int UserId,ChangePasswordDto changePasswordRequest);
         public Task ForgetUserPasswordAsync(ForgetPasswordDto forgetPasswordRequest);

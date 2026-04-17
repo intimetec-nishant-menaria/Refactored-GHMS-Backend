@@ -54,6 +54,7 @@ namespace guest_house_management_backend.Services.Bookings
         }
         public async Task CreateAsync(CreateBookingDto createRequest)
         {
+            Booking booking;
             await _unitOfWork.BeginTransactionAsync();
             try
             {
@@ -71,7 +72,7 @@ namespace guest_house_management_backend.Services.Bookings
                 {
                     throw new KeyNotFoundException("Room not found");
                 }
-                var booking = new Booking
+                booking = new Booking
                 {
                     BugId = createRequest.BugId,
                     RoomId = createRequest.RoomId,
@@ -84,8 +85,15 @@ namespace guest_house_management_backend.Services.Bookings
                 };
                 await _repository.AddAsync(booking);
                 await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitAsync();
+            }
+            catch
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
 
-                await _emailSender.SendEmailASync(
+            _ = _emailSender.SendEmailASync(
                 createRequest.GuestEmail!,
                 "Booking Confirmed - Guest House Management",
                 $"""
@@ -105,14 +113,7 @@ namespace guest_house_management_backend.Services.Bookings
                 <p>We look forward to hosting you!</p>
                 <p>Best Regards,<br/>Management Team</p>
                 """);
-                await _unitOfWork.CommitAsync();
-                await _hubContext.Clients.All.SendAsync("ReceiveBookingUpdate",  _mapper.Map<BookingResponseDto>(booking));  
-            }
-            catch
-            {
-                await _unitOfWork.RollbackAsync();
-                throw;
-            }
+            await _hubContext.Clients.All.SendAsync("ReceiveBookingUpdate", _mapper.Map<BookingResponseDto>(booking));
         }
 
         public async Task UpdateAsync(int id, UpdateBookingDto updateRequest)
@@ -173,7 +174,7 @@ namespace guest_house_management_backend.Services.Bookings
             booking.Status = BookingStatusEnum.Cancelled;
             await _repository.UpdateBookingAsync(booking);
 
-            await _emailSender.SendEmailASync(
+            _ = _emailSender.SendEmailASync(
                 booking.GuestEmail,
                 "Booking Cancelled",
                 $"""
